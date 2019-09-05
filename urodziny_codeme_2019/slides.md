@@ -4,11 +4,13 @@ layout: true
 
 ---
 
-class: impact
+class: wrapper, center, middle
 
 # {{title}}
 
 ---
+
+class: wrapper, center, middle
 
 # Piotr Gaczkowski
 
@@ -20,113 +22,136 @@ class: impact
 
 ---
 
-class: impact
+class: wrapper, center, middle
 
 # Problem doświadczenia
 
 ---
+
+class: wrapper
 
 background-image: url(chicken_egg.jpg)
 background-size: 90% 90%
 
 ---
 
-class: impact
+class: wrapper, center, middle
 
 # Dzień z życia programisty
 
 ---
 
+class: wrapper
 background-image: url(coder.jpg)
 background-size: 90% 90%
 
 ---
 
+class: wrapper
 background-image: url(problemsolving.jpg)
 background-size: 90% 90%
 
 ---
 
+class: wrapper
 background-image: url(client.jpg)
 background-size: 90% 90%
 
 ---
 
+class: wrapper
 background-image: url(taskmanagement.jpg)
 background-size: 90% 90%
 
 ---
 
+class: wrapper
 background-image: url(coder.jpg)
 background-size: 90% 90%
 
 ---
 
+class: wrapper
 background-image: url(testing.jpg)
 background-size: 90% 90%
 
 ---
 
+class: wrapper
 background-image: url(deployment.jpg)
 background-size: 90% 90%
 
 ---
 
-class: impact
+class: wrapper, center, middle
 
 # Czym jest doświadczenie w IT?
 
 ---
 
+class: wrapper, center, middle
+
 ## Rozwiązywanie problemów
 
-<img src="troubleshooting.jpg" style="height: 500px"/>
+<img src="troubleshooting.jpg" style="height: 400px"/>
 
 ---
+
+class: wrapper, center, middle
 
 ## Praca w zespole
 
-<img src="teamwork.jpg" style="height: 500px"/>
+<img src="teamwork.jpg" style="height: 400px"/>
 
 ---
+
+class: wrapper, center, middle
 
 ## Zarządzanie własnym czasem
 
-<img src="timemanagement.jpg" style="height: 500px"/>
+<img src="timemanagement.jpg" style="height: 400px"/>
 
 ---
+
+class: wrapper, center, middle
 
 ## Znajomość technologii
 
-<img src="technology.jpg" style="height: 500px"/>
+<img src="technology.jpg" style="height: 400px"/>
 
 ---
 
-class: impact
+class: wrapper, center, middle
 
 # Jak zdobyć doświadczenie?
 
 ---
 
+class: wrapper, center, middle
+
 ## Praktyki i staże
 
-<img src="internship.jpg" style="height: 500px"/>
+<img src="internship.jpg" style="height: 400px"/>
 
 ---
+
+class: wrapper, center, middle
 
 ## Projekty i społeczność Open Source
 
-<img src="opensource.jpg" style="height: 500px"/>
+<img src="opensource.jpg" style="height: 400px"/>
 
 ---
+
+class: wrapper, center, middle
 
 ## Warsztaty i hackathony
 
-<img src="workshop.jpg" style="height: 500px"/>
+<img src="workshop.jpg" style="height: 400px"/>
 
 ---
 
-class: impact
+class: wrapper, center, middle
 
 # Dziękuję!
 
