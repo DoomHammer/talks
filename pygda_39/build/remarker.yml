@@ -1,8 +1,0 @@
-cssFiles: ['presentation.css']
-assets: ['.']
-remarkConfig: {
-        ratio: '16:9',
-        highlightLines: true,
-        countIncrementalSlides: false,
-        highlightStyle: 'solarized-light'
-}
