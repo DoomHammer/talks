@@ -350,7 +350,7 @@ blockquote>p {
     position: relative;
 }
 
-.twitter::after {
+.twitter::before {
     content: "@DoomHammerNG";
     color: #272727;
     opacity: 0.5;
@@ -366,7 +366,11 @@ blockquote>p {
 }
 
 .qr::after {
-    content: url('qrcode.png');
+    content: "";
+    width: 100px;
+    height: 100px;
+    background-image: url('qrcode.png');
+    background-size: cover;
     color: #272727;
     opacity: 0.5;
     position: absolute;

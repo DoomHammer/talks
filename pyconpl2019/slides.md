@@ -53,15 +53,11 @@ class: wrapper, center, middle
 
 ![DoomHammer](doomhammer.jpg)
 
-[https://github.com/DoomHammer](https://github.com/DoomHammer)
+<https://github.com/DoomHammer> | [@doomhammerng](https://twitter.com/doomhammerng)
 
-[https://doomhammer.info](https://doomhammer.info)
+<https://doomhammer.info>
 
-???
-
-Nazywam się Piotr Gaczkowski, znany tu i ówdzie jako DoomHammer. Oprogramowania Open Source używam od ponad 15 lat, aktywnie udzielam się natomiast co najmniej od 2006 roku.
-
-Ponieważ w opisie prezentacji umieściłem "przypadki z życia i okolicy" będę skupiał się głównie na swoich osobistych doświadczeniach w tym temacie.
+### <https://doomhammer.info/talks/pyconpl2019>
 
 ---
 
@@ -404,16 +400,6 @@ Najgorszy i jednocześnie najtrudniejszy punkt dotyczący niemal każdych naszyc
 
 class: wrapper, center, middle
 
-<iframe width="1120" height="630" src="https://www.youtube.com/embed/PIAXG_QcQNU" frameborder="0" allow="encrypted-media" allowfullscreen></iframe>
-
-???
-
-Video: Money makes the world go 'round (Cabaret)
-
----
-
-class: wrapper, center, middle
-
 # Jak zarobić na Open Source?
 
 ---
@@ -563,14 +549,6 @@ class: wrapper, center, middle, no-list
 
 ## Firmy rozwijające Open Source
 
-- [DLabs](https://github.com/dlabspl/zombie-nginx)
-
-- Intel
-
-- Toptal
-
-- Redhat, SuSE, ...
-
 ---
 
 class: wrapper, center
@@ -649,6 +627,8 @@ class: wrapper, center, middle
 
 ![DoomHammer](doomhammer.jpg)
 
-### [https://github.com/DoomHammer](https://github.com/DoomHammer)
+<https://github.com/DoomHammer> | [@doomhammerng](https://twitter.com/doomhammerng)
 
-### [https://doomhammer.info](https://doomhammer.info)
+<https://doomhammer.info>
+
+### <https://doomhammer.info/talks/pyconpl2019>

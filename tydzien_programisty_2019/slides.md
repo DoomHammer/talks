@@ -16,15 +16,11 @@ class: wrapper, center, middle
 
 ![DoomHammer](doomhammer.jpg)
 
-[https://github.com/DoomHammer](https://github.com/DoomHammer)
+<https://github.com/DoomHammer> | [@doomhammerng](https://twitter.com/doomhammerng)
 
-[https://doomhammer.info](https://doomhammer.info)
+<https://doomhammer.info>
 
-[https://twitter.com/doomhammerng](@doomhammerng)
-
-<hr/>
-
-[https://doomhammer.info/talks/tp2019](https://doomhammer.info/talks/tp2019)
+### <https://doomhammer.info/talks/tp2019>
 
 ---
 
@@ -163,6 +159,8 @@ class: wrapper, center, middle
 
 ![DoomHammer](doomhammer.jpg)
 
-### [https://github.com/DoomHammer](https://github.com/DoomHammer)
+<https://github.com/DoomHammer> | [@doomhammerng](https://twitter.com/doomhammerng)
 
-### [https://doomhammer.info](https://doomhammer.info)
+<https://doomhammer.info>
+
+### <https://doomhammer.info/talks/tp2019>

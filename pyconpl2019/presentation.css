@@ -345,3 +345,33 @@ blockquote>p {
         left: 0 !important;
     }
 }
+
+.twitter::before {
+    content: "@DoomHammerNG";
+    color: #272727;
+    opacity: 0.5;
+    position: absolute;
+    margin-left: 1.5rem;
+    left: 0;
+    margin-bottom: 1.5rem;
+    bottom: 0;
+}
+
+.qr {
+    position: relative;
+}
+
+.qr::after {
+    content: "";
+    width: 100px;
+    height: 100px;
+    background-image: url('qrcode.png');
+    background-size: cover;
+    color: #272727;
+    opacity: 0.5;
+    position: absolute;
+    margin-right: 1.5rem;
+    right: 0;
+    margin-bottom: 1.5rem;
+    bottom: 0;
+}
