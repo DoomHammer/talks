@@ -37,7 +37,7 @@ background-size: 90% 90%
 
 ---
 
-class: wrapper, center, middle, twitter, qr
+class: wrapper, center, middle
 
 # Dzień z życia programisty
 
