@@ -49,6 +49,8 @@ Podobnie jest z udzielaniem się w projektach Open Source. Mnóstwo ludzi z cał
 
 class: wrapper, center, middle
 
+### <https://doomhammer.info/talks/pyconpl2019>
+
 # Piotr Gaczkowski
 
 ![DoomHammer](doomhammer.jpg)
@@ -56,8 +58,6 @@ class: wrapper, center, middle
 <https://github.com/DoomHammer> | [@doomhammerng](https://twitter.com/doomhammerng)
 
 <https://doomhammer.info>
-
-### <https://doomhammer.info/talks/pyconpl2019>
 
 ---
 
