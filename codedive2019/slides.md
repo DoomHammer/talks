@@ -41,10 +41,7 @@ class: wrapper, center, middle
 
 <https://github.com/aostrowski>
 
-[Habana Labs](https://habana.ai>)
-
-???
-TODO: habana logo?
+<img src="img/logos/Habana_Blue.png" style="width: 200px; border-radius: 0px"/>
 
 ---
 
@@ -294,36 +291,47 @@ class: wrapper, center, middle
 
 ---
 
-class: wrapper, center, middle
-
-# Ingredients
+background-image: url(img/icons8-team-seDjj4dmC9s-unsplash.jpg)
+background-size: cover
 
 ???
-TODO: image of ingredients
-
 - What makes a microservice?
 - Core application + supporting infrastructure
 
 ---
 
-class: wrapper, center, middle
-
-# Core app
+# Core App
 
 ???
-Ideally only business logic + communication
-...so you start hacking a REST-based service by hand using CppRestSDK
+Ideally only business logic plus communication
+
+--
+
+- a generator for Ubuntu-like release names
+
+???
+adjective plus an animal name
+
+--
+
+- input: the first letter, e.g. `P`
+
+--
+
+- possible output: `Pretty Pig`
+
+???
+One of the proposals written on their Wiki
 
 ---
 
 class: wrapper, center, middle
 
-# CppRestSdk
+# C++ REST SDK
 
 <https://github.com/Microsoft/cpprestsdk/>
 
 ---
-<!-- TODO: slides with demonstration of use -->
 
 ```C++
 using namespace ::web;
@@ -393,14 +401,25 @@ It's C++, so text-based REST can be too slow.
 
 class: wrapper, center, middle
 
-# gRPC + Protobuf
+<img src="img/logos/cncf/grpc-horizontal-color.svg" style="height: 350px" />
 
 <https://grpc.io/>
+
+???
+- with gRPC you can easily communicate with SW in other languages
+
+---
+
+class: wrapper, center, middle
+
+# Protocol Buffers
+
+<img src="img/logos/google_developers.png" style="height: 250px" />
 
 <https://developers.google.com/protocol-buffers/>
 
 ???
-gRPC can use other payloads too (e.g. FlatBuffers instead of Protobuf), but Protobuffs are field-tested and don't require extra work.
+- gRPC can use other payloads too (e.g. FlatBuffers instead of Protobuf), but Protobuffs are field-tested and don't require extra work.
 
 ---
 
@@ -470,19 +489,19 @@ class: wrapper, center, middle
 
 class: wrapper, center, middle
 
-# We need an envoy to proxy between REST and our new service
+# <span>We need an envoy to proxy between REST and our new service</span>
 
 ---
 
 class: wrapper, center, middle
 
-# <span style="color:gray">We need an </span>Envoy <span style="color:gray">to </span>Proxy<span style="color:gray"> between REST and our new service</span>
+# <span style="color:gray">We need an </span><span>envoy</span><span style="color:gray"> to </span><span>proxy</span><span style="color:gray"> between REST and our new service</span>
 
 ---
 
 class: wrapper, center, middle
 
-![Envoy Proxy](img/envoy/Envoy_Logo_Final_PANTONE.png)
+![Envoy Proxy](img/logos/cncf/envoy-horizontal-color.svg)
 
 <https://www.envoyproxy.io/>
 
@@ -494,15 +513,15 @@ class: wrapper, center, middle
 
 ---
 
-background-image: url(img/envoy/lovely\_combination.jpg) 
+background-image: url(img/lovely\_combination.jpg) 
 background-size: 100% 100%
 
 ???
 Sidecar Proxy pattern
-- name of image is Lovely Combination
 - just like sidecars are attached to motorcycles
-- Envoy attaches to the app
 - provides supporting features (like better balance and more seats)
+- Envoy attaches to the app
+- name of image is Lovely Combination
 
 ---
 
@@ -575,7 +594,7 @@ And Envoy delivers
 - what to do when a service is busy or unable to respond timely?
 - long waits can cascade through other microservices
 - solution is to use a Circuit Breaker
-- after X failed requests, assume the service is broken and short circuit
+- when it sees the service fails to process requests, assume the service is broken and short circuit
  
 TODO: diagram
 
@@ -764,15 +783,21 @@ class: attributions
 
 - <a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@wirhabenzeit?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Dominik Schröder"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-2px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path></svg></span><span style="display:inline-block;padding:2px 3px">Dominik Schröder</span></a>
 
+- <a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@icons8?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Icons8 Team"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-2px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path></svg></span><span style="display:inline-block;padding:2px 3px">Icons8 Team</span></a>
+
 - <a href="https://www.flickr.com/photos/56553246@N00/5875781519">"Lovely combination"</a><span> by <a href="https://www.flickr.com/photos/56553246@N00">Steve Parker</a></span> is licensed under <a href="https://creativecommons.org/licenses/by/2.0/?ref=ccsearch&atype=html" style="margin-right: 5px;">CC BY 2.0</a><a href="https://creativecommons.org/licenses/by/2.0/?ref=ccsearch&atype=html" target="_blank" rel="noopener noreferrer" style="display: inline-block;white-space: none;margin-top: 2px;margin-left: 3px;height: 16px !important;"><img style="height: inherit;margin-right: 3px;display: inline-block;" src="img/icons/cc_icon.svg" /><img style="height: inherit;margin-right: 3px;display: inline-block;" src="img/icons/cc-by_icon.svg" /></a>
 
 ---
+
+exclude: true
 
 class: wrapper, center, middle
 
 # Backup
 
 ---
+
+exclude: true
 
 # Istio
 
@@ -790,6 +815,8 @@ class: wrapper, center, middle
 Resiliency: circuit breaking, timeouts, retries
 
 ---
+
+exclude: true
 
 # What about Netflix services?
 
@@ -825,7 +852,7 @@ class: center, middle, split50
 
   <https://github.com/aostrowski>
 
-  [Habana Labs](https://habana.ai>)
+  <img src="img/logos/Habana_Blue.png" style="height: 30px; margin-top: -10px; border-radius: 0px"/>
 ]
 
 ### <https://doomhammer.info/talks/codedive2019>
