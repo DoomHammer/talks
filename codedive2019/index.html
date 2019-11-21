@@ -385,16 +385,15 @@ using namespace ::web::http;
 using jstring = json::value::string;
 
 void handle_request(http_request req) {
-	auto parameters = uri::split_query(req.request_uri().query());
-	if (auto kvIt = parameters.find(U("letter"));
+    auto parameters = uri::split_query(req.request_uri().query());
+    if (auto kvIt = parameters.find(U("letter"));
             kvIt == end(parameters)) {
-		auto err = U("Missing first letter");
-		respond(req, status_codes::BadRequest, jstring(err));
-		return;
-	}
-
-	respond(req, status_codes::OK,
-			jstring(generate_code_name(kvIt->second)));
+        auto err = U("Missing first letter");
+        respond(req, status_codes::BadRequest, jstring(err));
+    } else {
+        respond(req, status_codes::OK,
+                jstring(generate_code_name(kvIt->second)));
+    }
 }
 ```
 
@@ -497,6 +496,9 @@ public:
                         const GenerationRequest* in,
                         GenerationResponse* response)
         -> ::grpc::Status override {
+    if (!is_valid_input(in->letter())
+      return { ::grpc::StatusCode::INVALID_ARGUMENT };
+    }
     response->set_reply(generate_code_name(in->letter()[0]));
     return {};
   }
@@ -587,38 +589,70 @@ background-size: 100% 100%
 
 # Envoy as a REST to gRPC Bridge
 
+--
+
 ```yaml
 filter_chains:
 - filters:
   - name: envoy.http_connection_manager
-	typed_config:
-	  "@type": type.googleapis.com/envoy.config.filter.network.     &#x21A9;
-			   http_connection_manager.v2.httpconnectionmanager
-	  codec_type: auto
-	  route_config:
-		name: local_route
-		virtual_hosts:
-		- name: local_service
-		  domains: ["*"]
-		  routes:
+    typed_config:
+      "@type": type.googleapis.com/envoy.config.filter.network.     &#x21A9;
+           http_connection_manager.v2.httpconnectionmanager
+      codec_type: auto
+      route_config:
+        name: local_route
+        virtual_hosts:
+        - name: local_service
+          domains: ["*"]
+          routes:
 ```
 
 ---
 
-# Envoy as a REST to gRPC Bridge, contd.
+# Envoy as a REST to gRPC Bridge, cont'd
 
 ```yaml
-	  route_config:
-		virtual_hosts:
-		- name: local_service
-		  routes:
-		  - match:
-			  prefix: "/"
-			  grpc: {}
-			route: { cluster: grpc_service }
-	  http_filters:
-	  - name: envoy.router
-		typed_config: {}
+      route_config:
+        virtual_hosts:
+        - name: local_service
+          routes:
+          - match:
+            prefix: "/"
+            grpc: {}
+          route: { cluster: grpc_service }
+      http_filters:
+      - name: envoy.router
+        typed_config: {}
+```
+
+---
+
+# Envoy as a REST to gRPC Bridge, cont'd
+
+```yaml
+  clusters:
+  - name: grpc_service
+    connect_timeout: 0.250s
+    type: static
+    lb_policy: round_robin
+    http2_protocol_options: {}
+    load_assignment:
+```
+
+---
+
+# Envoy as a REST to gRPC Bridge, cont'd
+
+```yaml
+    load_assignment:
+      cluster_name: grpc_service
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: 127.0.0.1
+                port_value: 31337
 ```
 
 ---
@@ -642,8 +676,6 @@ And Envoy delivers
 - solution is to use a Circuit Breaker
 - when it sees the service fails to process requests, assume the service is broken and short circuit
  
-TODO: diagram
-
 --
 
 In the `clusters` section:
@@ -679,7 +711,7 @@ In the `routes` section:
 retry_policy:
     retry_on: "5xx"
     num_retries: 3
-	per_try_timeout_ms: 1000
+    per_try_timeout_ms: 1000
 ```
 
 ???
@@ -709,7 +741,7 @@ In `routes`:
 
 ```yaml
 - match:
-    prefix: "/service"
+    prefix: "/name_generator"
   route:
     weighted_clusters:
       clusters:
@@ -792,8 +824,8 @@ background-size: 100% 100%
 <!--
 TODOs:
 - writing C++ microservices made easy: 
-	- Abseil (flags, containers, live-at-head),
-	- spdlog (uses fmt under the hood),
+    - Abseil (flags, containers, live-at-head),
+    - spdlog (uses fmt under the hood),
 - few slides about how it will change in the future
     - coroutines in C++20
     - better coroutines (in 23)
