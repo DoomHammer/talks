@@ -395,9 +395,17 @@ blockquote>p {
   position: relative;
 }
 
+.left-pane p:first-child {
+    margin-top: 0;
+}
+
 .right-pane {
   float: right;
   position: relative;
+}
+
+.right-pane p:first-child {
+    margin-top: 0;
 }
 
 .split75 .left-pane {

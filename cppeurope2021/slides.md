@@ -34,6 +34,10 @@ class: wrapper, center, middle
 
 ---
 
+background-image: url(img/samuel-regan-asante-g9A2llpDObU-unsplash.jpg)
+
+---
+
 class: wrapper, center, middle
 
 # Speeding up Builds
@@ -54,16 +58,28 @@ In essence: compiler cache
 # CCache - features
 
 - much faster recompilation 
-- compression
-- statistics
-- silent fallback in unsupported cases
-- easy integration with CI
-- support for C++20's modules (doc mentions Clang only; require settings a few options)
-
 ???
 - supports C, C++, Objective-C, Objective-C++, CUDA & assembly
+--
+
+- compression
+--
+
+- statistics
+???
 - low overhead
 - checksums for correctness since 4.0
+--
+
+- silent fallback in unsupported cases
+--
+
+- easy integration
+--
+
+- support for C++20's modules
+???
+- modules - doc mentions Clang only; require settings a few options
 
 ---
 
@@ -71,7 +87,7 @@ In essence: compiler cache
 
 - works on Linux and macOS, other Unixes, and Windows
 - supports GCC, Clang and NVCC
-- MSVC support underway ([#506](https://github.com/ccache/ccache/pull/506))
+- MSVC support underway (PR [#506](https://github.com/ccache/ccache/pull/506))
 
 ---
 
@@ -84,12 +100,12 @@ ccache [flag]
 ccache [[compiler] [flags ...]]
 compiler [flags ...]
 ```
-
 ???
 First: for managing ccache itself, e.g. stats
 2 & 3: for compiling
-
 --
+
+exclude: true
 
 or via build systems
 
@@ -97,13 +113,16 @@ or via build systems
 
 # CCache - installation
 
-- Windows: just use binaries from GitHub
+- Windows:
+  - just use binaries from GitHub
 - Others:
   - system package manager - usually not the latest version
   - `brew install ccache`
   - build from sources (CMake)
 
 ---
+
+class: wrapper, center, middle
 
 # Intermission: Brew
 
@@ -119,14 +138,35 @@ Why use it?
 - plethora of packages in recent versions
   - Snap has old and unofficial CCache (3.7 vs brew's 4.2)
 
+Scoop for Windows
+
+Python has C++ software too, e. g. CMake (`pip install cmake`)
+
 ---
 
-# CCache - configuration
+# CCache - usage
 
-Ensuring CCache is always used:
+- invoke manually
+```
+ccache <compiler> <compiler_args>
+```
+--
+
+- invoke via symbolic links masquerading the compilers
+???
+masqerading: we'll show that in a sec
+--
+
+- integrate with build systems
+
+---
+
+# CCache - masquerading compilers
+
+To ensure CCache is used by default:
+--
 
 1. Run:
-
 ```
 cp ccache /usr/local/bin/
 ln -s ccache /usr/local/bin/gcc
@@ -134,14 +174,24 @@ ln -s ccache /usr/local/bin/g++
 ln -s ccache /usr/local/bin/cc
 ln -s ccache /usr/local/bin/c++
 ```
+???
+When invoked, ccache deduces orig. compiler from $0
+--
 
 2. Put `/usr/local/bin` early in `PATH`
 
 ---
 
-# CCache - configuration, cont'd
+# CCache - configuration
 
-Many environemnt variables and corresponding settings in `ccache.conf`.
+- many environment variables 
+- corresponding settings in `ccache.conf`
+???
+In most cases defaults work well.
+
+---
+
+# CCache - configuration, cont'd
 
 - cache size and location
 - behavior: `sloppiness`, preprocessing, etc.
@@ -150,24 +200,25 @@ Many environemnt variables and corresponding settings in `ccache.conf`.
 - debugging and logging
 
 ???
-In most cases defaults work well.
 Cache size - one thing worth increasing.
 
 Sloppiness:
 - pretty strict by default -> less false hits
-- use ctimes/mtimes instead of file contents
+- allows to use ctimes/mtimes instead of file contents
 - needed for modules and precompiled headers
 
 ---
 
 # CCache - integrating with CMake
 
-- since CMake 3.4
-- 
+Available since CMake 3.4
+--
+
 ```
 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 ```
-- 
+--
+
 ```
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
@@ -183,8 +234,14 @@ RULE_LAUNCH_LINK - no use, CCache doesn't support linking
 # CCache - sharing cache
 
 - possible on same machine and using a network storage
-- users need to be in same group
+--
+
 - for locations afar, consider providing their own caches
+--
+
+- users need to be in same group
+--
+
 - in config, provide:
 
 ```
@@ -198,10 +255,10 @@ umask = 002
 
 ???
 
-`base_dir` - allows different users to share cache
-`hash_dir` - paths in debug symbols
-`temporary_dir` - faster + helps avoid some bugs
-To share between OS-es: set `sloppiness` to `system_headers`
+- `base_dir` - allows different users to share cache
+- `hash_dir` - paths in debug symbols
+- `temporary_dir` - faster + helps avoid some bugs
+- To share between OS-es: set `sloppiness` to `system_headers`
 
 ---
 
@@ -229,6 +286,16 @@ Personal experience: 12 minutes &rarr; less than 30 seconds
 
 class: wrapper, center, middle
 
+# What else a developer needs?
+
+---
+
+background-image: url(img/lama-roscu-Wpg3Qm0zaGk-unsplash.jpg)
+
+---
+
+class: wrapper, center, middle
+
 # Icecream
 
 https://github.com/icecc/icecream
@@ -241,27 +308,54 @@ fork of distcc - with a central server that chooses fastest free server
 # Icecream - features
 
 - scheduler 
+--
+
   - only uses free resources on machines
+--
+
   - allows good perf on heterogeneous environments
+--
+
   - allows some machines to be off during compilation
+--
+
 - remote cross compiling
+???
+Automatically sends toolchain to remote
+--
+
 - monitoring
 
 ---
 
+exclude: true
+
 # Monitoring - Icemon
 
-TODO
+https://github.com/icecc/icemon
 
 ---
 
 # Monitoring - Sundae
 
-![Sundae](img/sundae.gif)
+https://github.com/JPEWdev/icecream-sundae
+
+<img style="position:absolute;bottom: 10px;right: 0px;object-fit: scale-down;width: 60%;" src="img/sundae.png" />
 
 ---
 
-# Icecream - supported environment
+# Monitoring - Sundae - cont'd
+
+![Sundae](img/icecream_sundae_demo.png)
+
+???
+
+% - local job
+= - remote job
+
+---
+
+# Icecream - supported environments
 
 - Linux
 - macOS
@@ -279,28 +373,27 @@ background-image: url(img/icecream.jpg)
 # Icecream - installation
 
 - developers recommend using distro's package
-- ready-made docker containers are convenient too:
-  - cbarraco/icecc-scheduler
-  - cbarraco/icecc-daemon
+  - `sudo apt install icecc`
+  - `sudo apt install icecc-scheduler`
+  - `sudo apt install icecream-sundae`
 
 ???
-take a look at Dockerfiles
-adapt if newer IceCC is needed
-
+- `icecc` has client and daemon (both required for remote builds)
+- scheduler - on one host only (two possible, automatic fallback)
+- sundae - optional
 ---
 
 # Icecream - configuration
 
-- persistent connections:
-  - `--scheduler-host` for daemon
-  - `--persistent-client-connection` for scheduler
 - firewall
   - TCP: 10245, 8765, 8766
   - UDP: 8765
-
+- other defaults should work fine
+- persistent connections:
+  - `--scheduler-host` for daemon
+  - `--persistent-client-connection` for scheduler
 ???
 
-Defaults work fine.
 icecc must be in your path - that's all.
 Network should be fast. Avoid far away nodes.
 Scheduler should have dedicated resources - sensitive to latency.
@@ -315,28 +408,42 @@ To ensure Icecream is always used by default, put
 /usr/lib/icecc/bin
 ```
 
-early in your path.
+early in your `PATH`.
+
+---
+
+# Icecream - integrating with CMake
+
+```
+find_program(ICECC_PROGRAM icecc)
+if(ICECC_PROGRAM)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${ICECC_PROGRAM}")
+endif()
+```
 
 ---
 
 # Combining CCache and Icecream
 
-Your `ccache.conf` file must contain:
-
+- Your `ccache.conf` file must contain:
 ```
 prefix_command=icecc
 ```
+--
 
-CCache should come before IceCC in `PATH`
+- CCache should come before IceCC in `PATH`
 
 ---
 
 # How much does it help?
 
-- builds faster by ~ 20%
-- more responsive local machine
+![Firefox with IceCC](img/icecc_firefox.png)
 
-![Firefox with IceCC](img/firefox_icecc.png)
+???
+- Many cases show at least 20% faster builds
+- More responsive local machine
+
+https://bugzilla.mozilla.org/show_bug.cgi?id=927952
 
 ---
 
@@ -355,14 +462,14 @@ https://www.incredibuild.com/
 
 ---
 
-# sccache
+# `sccache`
 
 - Mozilla's `ccache`-like compiler cache
 - built-in `icecream`-style distributed compilation
 - supports C, C++, Rust, and NVCC
-- supports Windows, Linux and macOS
+- on Windows, Linux and macOS
 
-- not production ready yet (current version: 0.2.15)
+Not production ready yet (current version: 0.2.15)
 
 https://github.com/mozilla/sccache
 
@@ -382,6 +489,30 @@ exclude: true
 
 TODO
 
+---
+
+class: center, middle, split50
+
+# Hungry for more?
+
+.left-pane[
+![More content like this can be found in our Hands-On Software Architecture with C++ book!](img/book_cover.jpg)
+]
+.right-pane[
+.left[
+Our brand new book is coming out!
+
+Featuring:
+- More on building and packaging
+- Designing quality software
+- Leveraging C++20 features
+- Microservices and cloud-native C++
+
+Available from March 12th on ![Packt](https://www.packtpub.com/product/software-architecture-with-c/9781838554590)
+
+And from April 9th on Amazon
+]
+]
 ---
 
 # Questions?
@@ -408,3 +539,11 @@ class: center, middle, split50
 ]
 
 ### <https://doomhammer.info/talks/cppeurope2021>
+
+---
+
+# Attributions
+
+- _Building Site_ photo by <a href="https://unsplash.com/@fkaregan?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Samuel Regan-Asante</a> on <a href="https://unsplash.com/?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>
+- _Icecream rainbow_ photo by <a href="https://unsplash.com/@lamaroscu?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Lama Roscu</a> on <a href="https://unsplash.com/s/photos/icecream?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>
+- Sundae image by <a href="https://pixabay.com/users/blende12-201217/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2300531">Gerhard G.</a> from <a href="https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2300531">Pixabay</a>
