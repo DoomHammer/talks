@@ -44,7 +44,9 @@ class: wrapper, center, middle
 
 ![DoomHammer](img/doomhammer.jpg)
 
-<https://github.com/DoomHammer> | [@doomhammerng](https://twitter.com/doomhammerng)
+<https://github.com/DoomHammer> | <svg aria-hidden="true" focusable="false"
+data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16"
+role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" height="1em"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg> [@doomhammerng](https://twitter.com/doomhammerng)
 
 <https://doomhammer.info>
 
@@ -56,7 +58,9 @@ class: wrapper, center, middle
 
 <img src="img/ao.jpg" style="width: 200px; height: 200px"/>
 
-<https://github.com/aostrowski> | [@adr_ostrowski](https://twitter.com/adr_ostrowski)
+<https://github.com/aostrowski> | <svg aria-hidden="true" focusable="false"
+data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16"
+role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" height="1em"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>[@adr_ostrowski](https://twitter.com/adr_ostrowski)
 
 <img src="img/logos/habana_classic_blue.png" style="width: 200px; border-radius: 0px"/>
 
@@ -519,12 +523,321 @@ TODO
 
 ---
 
+background-image: url(img/switch.jpg)
+
+---
+
+class: twitter
+# Portable build environments
+
+--
+
+How to make sure everyone's playing the same toys?
+
+---
+
+class: twitter
+# VMs
+
+--
+
+- All the software preinstalled
+
+--
+
+- Easy distribution
+
+--
+
+- May be less than pleasant to use
+
+---
+
+class: twitter
+# Containers?
+
+--
+
+- Oooh, shiny!
+
+--
+
+- Slicker than VMs!
+
+--
+
+- Application containers and toolchains don't match
+
+---
+
+class: twitter
+# What else?
+
+---
+
+class: twitter
+# Nix features
+
+- Operates in userland
+
+- Deterministic packages and environments
+
+- Atomic upgrades
+
+- Rollbacks
+
+- Build environment management
+
+- Multiple versions of packages side-by-side on a single system
+
+- Runs on Linux and macOS
+
+---
+
+class: twitter
+# Functional approach
+
+- Installing or upgrading package won't break other packages
+
+- Every package is installed in a separate directory
+
+- It allows easy rollback
+
+- Prevents inconsistent state
+
+---
+
+class: twitter
+# Good for multi-user environments
+
+- Several users can install packages without superuser privileges
+
+- Different users can have different package versions
+
+---
+
+class: twitter
+# Projects with direnv
+
+Uses `nix-shell`.
+
+Automatically sets up development environment whenever you enter a directory.
+
+You can pin the packages version.
+
+---
+
+.envrc
+
+```bash
+use_nix
+. env/bin/activate
+```
+
+default.nix
+
+```nix
+{ pkgs ? import <nixpkgs> {} }:
+
+with pkgs;
+
+let
+  gcc = gcc10;
+in
+mkShell {
+  buildInputs = [ cmake ccache gcc git gnumake icecream ];
+}
+```
+
+---
+
+class: twitter
+# How Does it Compare to The Rest?
+
+- Still not as easy as Homebrew
+
+- GNU Guix using GNU Scheme (LISP)
+
+- ... if you love parentheses, you'll love GUIX!
+
+- ... also works with direnv!
+
+---
+
+class: twitter
+
+# Managing Git hooks
+
+--
+
+- There's an app for that!
+
+--
+
+- pre-commit
+
+---
+
+class: twitter
+
+# pre-commit
+
+```
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-byte-order-marker
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+      - id: no-commit-to-branch
+        args: [--branch, master]
+      - id: trailing-whitespace
+```
+
+---
+
+class: twitter
+
+# pre-commit
+
+```
+#[...]
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.1.0
+    hooks:
+      - id: clang-format
+        args: [--style=Google, -i]
+        exclude: 3rd-parties/
+  - repo: https://github.com/iconmaster5326/cmake-format-pre-commit-hook
+    rev: v0.6.9
+    hooks:
+      - id: cmake-format
+        exclude: 3rd-parties/
+```
+
+---
+
+class: twitter
+
+# Packaging
+
+---
+
+class: twitter
+
+# Conan
+
+--
+
+- Package manager for C++
+
+--
+
+- Written in Python
+
+--
+
+- like pip/npm/gem but with full toolchain support
+
+--
+
+- uses binaries when possible
+
+---
+
+class: twitter
+
+# Conan profile
+
+```
+[settings]
+os=Linux
+os_build=Linux
+arch=x86_64
+arch_build=x86_64
+compiler=gcc
+compiler.version=9
+compiler.libcxx=libstdc++11
+build_type=Release
+[options]
+[build_requires]
+[env]
+```
+
+---
+
+class: twitter
+
+# Conanfile
+
+```
+[requires]
+flac/1.3.3
+spdlog/[>=1.4.1]
+
+[generators]
+cmake
+
+[imports]
+bin, *.dll -> ./bin
+lib, *.dylib* -> ./bin
+```
+
+---
+
+class: twitter
+
+# CMakeLists.txt
+
+```
+#[...]
+conan_basic_setup()
+#[...]
+target_link_libraries(
+  songcorder
+  #[...]
+  ${CONAN_LIBS}
+  #[...]
+)
+```
+
+---
+
+class: twitter
+
+# CPack
+
+--
+
+- Generates sources and binary packages
+
+--
+
+- Could spit out NSIS installers and macOS dmg archives
+
+--
+
+- Produces Deb and RPM on supported platforms
+
+---
+
+class: twitter
+
+# AppImage / Flatpack
+
+- The new way to package portable Linux apps
+
+---
+
 class: center, middle, split50
 
 # Hungry for more?
 
 .left-pane[
-![More content like this can be found in our Hands-On Software Architecture with C++ book!](img/book_cover.jpg)
+  <img src="img/book_cover.jpg" style="width: auto; height: 400px"/>
 ]
 .right-pane[
 .left[
@@ -536,11 +849,12 @@ Featuring:
 - Leveraging C++20 features
 - Microservices and cloud-native C++
 
-Available from March 12th on ![Packt](https://www.packtpub.com/product/software-architecture-with-c/9781838554590)
+Available from March 12th on [Packt](https://www.packtpub.com/product/software-architecture-with-c/9781838554590)
 
 And from April 9th on Amazon
 ]
 ]
+
 ---
 
 # Questions?
@@ -573,14 +887,19 @@ class: center, middle, split50
 # Attributions
 
 - _Building Site_ photo by <a href="https://unsplash.com/@fkaregan?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Samuel Regan-Asante</a> on <a href="https://unsplash.com/?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>
+
 - _Icecream rainbow_ photo by <a href="https://unsplash.com/@lamaroscu?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Lama Roscu</a> on <a href="https://unsplash.com/s/photos/icecream?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>
+
 - Sundae image by <a href="https://pixabay.com/users/blende12-201217/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2300531">Gerhard G.</a> from <a href="https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2300531">Pixabay</a>
+
+- Switch photo by <a href="https://unsplash.com/@twinsfisch?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Isabella and Louisa Fischer</a> on <a href="https://unsplash.com/s/photos/switch?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></span>
 </textarea>
     <script src="remark.js"></script>
     
     <script>
       window.slideshow = remark.create({"ratio":"16:9","highlightLines":true,"countIncrementalSlides":false,"highlightStyle":"solarized-dark"})
     </script>
+    
     <script>
       
       ;window.LiveReloadOptions = {
