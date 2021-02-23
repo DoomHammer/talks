@@ -270,7 +270,7 @@ umask = 002
 
 A lot!
 
-Personal experience: 12 minutes &rarr; less than 30 seconds
+Personal experience: builds shorter by up to 95%
 
 ---
 
@@ -766,7 +766,7 @@ class: twitter
 
 ```
 #[...]
-conan_basic_setup()
+conan_basic_setup(TARGETS)
 #[...]
 target_link_libraries(
   songcorder
@@ -801,6 +801,10 @@ class: twitter
 # AppImage / Flatpack
 
 - The new way to package portable Linux apps
+
+---
+
+<img src="img/prettyplease.jpg" style="width: auto; height: 600px"/>
 
 ---
 
