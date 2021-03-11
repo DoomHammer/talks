@@ -9,5 +9,6 @@ node_modules: Makefile
 %/index.html: %/slides.md %/presentation.css %/remarker.yml node_modules Makefile
 	cd $*; ../node_modules/.bin/remarker build -d .
 	@touch $@
+	cd $*; cp -a ../remark.js .
 
 .PHONY: all
