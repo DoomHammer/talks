@@ -657,7 +657,8 @@ mkShell {
 ---
 
 class: twitter
-# How Does it Compare to The Rest?
+
+# How does it compare to the rest?
 
 - Still not as easy as Homebrew
 
@@ -766,7 +767,7 @@ class: twitter
 
 # Conanfile - specifying dependencies
 
-```ini
+```
 [requires]
 flac/1.3.3
 spdlog/[>=1.4.1]
@@ -861,11 +862,12 @@ class: twitter
 ```
 --
 ```python
-def package_info(self):
-    self.cpp_info.libs = tools.collect_libs(self)
-    if not self.options.shared:
-        self.cpp_info.defines = ["__PTW32_STATIC_LIB"]
+    def package_info(self):
+        self.cpp_info.libs = tools.collect_libs(self)
+        if not self.options.shared:
+            self.cpp_info.defines = ["__PTW32_STATIC_LIB"]
 ```
+
 ???
 - `package_info()` specifies produced libraries, dirs and flags
 
@@ -1018,4 +1020,5 @@ role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" height="1em"
 - _Icecream rainbow_ photo by <a href="https://unsplash.com/@lamaroscu?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Lama Roscu</a> on <a href="https://unsplash.com/s/photos/icecream?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>
 
 - Sundae image by <a href="https://pixabay.com/users/blende12-201217/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2300531">Gerhard G.</a> from <a href="https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2300531">Pixabay</a>
+
 
