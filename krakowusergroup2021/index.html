@@ -26,7 +26,7 @@ h1, h2, h3 {
     </style>
   </head>
   <body>
-    <textarea id="source">title: Docker ?? C++
+    <textarea id="source">title: Docker 💚 C++
 class: wrapper
 layout: true
 
@@ -66,933 +66,696 @@ role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" height="1em"
 
 ---
 
-background-image: url(img/samuel-regan-asante-g9A2llpDObU-unsplash.jpg)
+# Agenda
+
+- Docker refresher: consuming and producing packages
+- building C++ applications using CMake
+- packaging C++ code inside Docker
+- multi-stage builds
+- debugging C++ code inside containers
+- managing toolchains with Docker
+- running external services
+- Docker Compose
+- CI/CD with Docker
+
+<!--
+
+Opis:
+
+Building C++ using different toolchains should be easy. Reproducing your build, test, and production environment shouldn't be hard either. If you assume this is just wishful thinking, this is a talk for you. If you don't, come listen how, thanks to Docker, it's easy to make those things a bliss.
+
+In this talk, we'll demonstrate how to containerize your app effortlessly using Docker and CMake. 
+What's more, you'll also see how to use Docker to provide a uniform build environment for all your developers. Cross-platform development and reproducible builds have never been easier.
+Last but not least, we'll show you how to easily deploy complex applications right on your developer VMs.
+
+Czesc 1:
+
+- paczkowanie przy pomocy Dockera
+- współpraca Docker + CMake
+- debuggowanie kontenerów
+
+Czesc 2:
+- toolchain w Docker
+- dodatkowa infra (bazy danych, serwery www, ...) w Dockerze
+- Docker Compose
+- CI/CD z Docker + C++
+
+-->
 
 ---
 
-class: wrapper, center, middle
+# Docker
 
-# Speeding up Builds
-
----
-
-class: wrapper, center, middle
-
-# CCache
-
-https://ccache.dev/
+![Docker](img/Docker_container_engine_logo.svg)
 
 ???
-In essence: compiler cache
+- lightweight, helps deal with environment issues
+- supported on Linux, Windows, Mac
+- helps to apply "cattle, not pets"
 
 ---
 
-class: twitter
-# CCache - features
+# Running Docker containers in a nutshell
 
-- much faster recompilation 
-???
-- supports C, C++, Objective-C, Objective-C++, CUDA & assembly
+`docker run -i -t --rm`
 --
 
-- compression
+`-e FOO=bar`
 --
 
-- statistics
-???
-- low overhead
-- checksums for correctness since 4.0
+`-p 8080:80/udp`
 --
 
-- silent fallback in unsupported cases
+`-v /path/on/host:/path/in/container:ro`
 --
 
-- easy integration
---
-
-- support for C++20's modules
-???
-- modules - doc mentions Clang only; require settings a few options
+`image:latest`
 
 ---
 
-class: twitter
-# CCache - supported environment
-
-- works on Linux and macOS, other Unixes, and Windows
-- supports GCC, Clang and NVCC
-- MSVC support underway (PR [#506](https://github.com/ccache/ccache/pull/506))
-
----
-
-exclude: true
-
-class: twitter
-# CCache - usage
-
-```
-ccache [flag]
-ccache [[compiler] [flags ...]]
-compiler [flags ...]
-```
-???
-First: for managing ccache itself, e.g. stats
-2 & 3: for compiling
---
-
-exclude: true
-
-or via build systems
-
----
-
-class: twitter
-# CCache - installation
-
-- Windows:
-  - just use binaries from GitHub
-- Others:
-  - system package manager - usually not the latest version
-  - `brew install ccache`
-  - build from sources (CMake)
-
----
-
-class: wrapper, center, middle
-
-# Intermission: Brew
-
-![Homebrew](img/homebrew-256x256.png) <!-- TODO: can we use this image legally-speaking? -->
-
-https://brew.sh/
-
-???
-Package manager for macOS and Linux
-
-Why use it?
-- all files installed in one subtree - clean removal if needed
-- plethora of packages in recent versions
-  - Snap has old and unofficial CCache (3.7 vs brew's 4.2)
-
-Scoop for Windows
-
-Python has C++ software too, e. g. CMake (`pip install cmake`)
-
----
-
-class: twitter
-# CCache - usage
-
-- invoke manually
-```
-ccache <compiler> <compiler_args>
-```
---
-
-- invoke via symbolic links masquerading the compilers
-???
-masqerading: we'll show that in a sec
---
-
-- integrate with build systems
-
----
-
-class: twitter
-# CCache - masquerading compilers
-
-To ensure CCache is used by default:
---
-
-1. Run:
-```
-cp ccache /usr/local/bin/
-ln -s ccache /usr/local/bin/gcc
-ln -s ccache /usr/local/bin/g++
-ln -s ccache /usr/local/bin/cc
-ln -s ccache /usr/local/bin/c++
-```
-???
-When invoked, ccache deduces orig. compiler from $0
---
-
-2. Put `/usr/local/bin` early in `PATH`
-
----
-
-class: twitter
-# CCache - configuration
-
-- many environment variables 
-- corresponding settings in `ccache.conf`
-???
-In most cases defaults work well.
-
----
-
-class: twitter
-# CCache - configuration, cont'd
-
-- cache size and location
-- behavior: `sloppiness`, preprocessing, etc.
-- compiler specific, e. g. `prefix_command`
-- read only mode
-- debugging and logging
-
-???
-Cache size - one thing worth increasing.
-
-Sloppiness:
-- pretty strict by default -> less false hits
-- allows to use ctimes/mtimes instead of file contents
-- needed for modules and precompiled headers
-
----
-
-class: twitter
-# CCache - integrating with CMake
-
-Available since CMake 3.4
---
-
-```
--DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-```
---
-
-```
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-endif()
-```
-
-???
-RULE_LAUNCH_LINK - no use, CCache doesn't support linking
-
----
-
-class: twitter
-# CCache - sharing cache
-
-- possible on same machine and using a network storage
---
-
-- for locations afar, consider providing their own caches
---
-
-- users need to be in same group
---
-
-- in config, provide:
-
-```
-cache_size = 100G
-base_dir = /home/current/user/
-cache_dir = /network/storage/path
-hash_dir = false
-temporary_dir = /some/local/dir/like/tmp
-umask = 002
-```
-
-???
-
-- `base_dir` - allows different users to share cache
-- `hash_dir` - paths in debug symbols
-- `temporary_dir` - faster + helps avoid some bugs
-- To share between OS-es: set `sloppiness` to `system_headers`
-
----
-
-class: twitter
-# How much does it help?
-
-A lot!
-
-Personal experience: builds shorter by up to 95%
-
----
-
-# How much does it help - cont'd
-
-![Benchmark](img/ccache.png)
-
-???
-
-- Preprocessor - first run preprocessor, then hash results
-- Direct - hash source file and include files directly. If miss, goto preprocessor.
-- Depend - like direct, but doesn't goto preproc. on miss. 
-  - depends on compiler's `-MD` or `-MMD`
-  - Great for dist. builds (reduce local overhead)
-
----
-
-class: wrapper, center, middle
-
-# What else a developer needs?
-
----
-
-background-image: url(img/lama-roscu-Wpg3Qm0zaGk-unsplash.jpg)
-
----
-
-class: wrapper, center, middle
-
-# Icecream
-
-https://github.com/icecc/icecream
-
-???
-fork of distcc - with a central server that chooses fastest free server
-
----
-
-class: twitter
-# Icecream - features
-
-- scheduler 
---
-
-  - only uses free resources on machines
---
-
-  - allows good perf on heterogeneous environments
---
-
-  - allows some machines to be off during compilation
---
-
-- remote cross compiling
-???
-Automatically sends toolchain to remote
---
-
-- monitoring
-
----
-
-exclude: true
-
-class: twitter
-# Monitoring - Icemon
-
-https://github.com/icecc/icemon
-
----
-
-class: twitter
-# Monitoring - Sundae
-
-https://github.com/JPEWdev/icecream-sundae
-
-<img style="position:absolute;bottom: 10px;right: 0px;object-fit: scale-down;width: 60%;" src="img/sundae.png" />
-
----
-
-# Monitoring - Sundae - cont'd
-
-![Sundae](img/icecream_sundae_demo.png)
-
-???
-
-% - local job
-= - remote job
-
----
-
-class: twitter
-# Icecream - supported environments
-
-- Linux
-- macOS
-- FreeBSD
-- Cygwin
-
-No native Windows :(
-
----
-
-background-image: url(img/icecream.jpg)
-
----
-
-class: twitter
-# Icecream - installation
-
-- developers recommend using distro's package
-  - `sudo apt install icecc`
-  - `sudo apt install icecc-scheduler`
-  - `sudo apt install icecream-sundae`
-
-???
-- `icecc` has client and daemon (both required for remote builds)
-- scheduler - on one host only (two possible, automatic fallback)
-- sundae - optional
----
-
-class: twitter
-# Icecream - configuration
-
-- firewall
-  - TCP: 10245, 8765, 8766
-  - UDP: 8765
-- other defaults should work fine
-- persistent connections:
-  - `--scheduler-host` for daemon
-  - `--persistent-client-connection` for scheduler
-
-???
-- icecc must be in your path - that's all.
-- Network should be fast. Avoid far away nodes.
-- Scheduler should have dedicated resources - sensitive to latency.
-
----
-
-class: twitter
-# Icecream - configuration, cont'd
-
-To ensure Icecream is always used by default, put
-
-```
-/usr/lib/icecc/bin
-```
-
-early in your `PATH`.
-
----
-
-class: twitter
-# Icecream - integrating with CMake
-
-```
-find_program(ICECC_PROGRAM icecc)
-if(ICECC_PROGRAM)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${ICECC_PROGRAM}")
-endif()
-```
-
----
-
-class: twitter
-# Combining CCache and Icecream
-
-- Your `ccache.conf` file must contain:
-```
-prefix_command=icecc
-```
---
-
-- CCache should come before IceCC in `PATH`
-
----
-
-class: twitter
-# How much does it help?
-
-![Firefox with IceCC](img/icecc_firefox.png)
-
-???
-- Many cases show at least 20% faster builds
-- More responsive local machine
-
-https://bugzilla.mozilla.org/show_bug.cgi?id=927952
-
----
-
-class: wrapper, center, middle
-
-# Noteworthy alternatives
-
----
-
-class: twitter
-# IncrediBuild
-
-- distributed building for Windows and Linux
-- commercial
-
-https://www.incredibuild.com/
-
----
-
-class: twitter
-# `sccache`
-
-- Mozilla's `ccache`-like compiler cache
-- built-in `icecream`-style distributed compilation
-- supports C, C++, Rust, and NVCC
-- on Windows, Linux and macOS
-
-Not production ready yet (current version: 0.2.15)
-
-https://github.com/mozilla/sccache
-
----
-
-class: twitter
-exclude: true
-
-# Bazel
-
-https://bazel.build/
-
----
-
-class: twitter
-exclude: true
-
-# C++20's Modules
-
-TODO
-
----
-
-class: wrapper, center, middle
-
-# Portable build environments
-
----
-
-class: twitter
-
-# Portable build environments
-
-How to make sure everyone's playing with the same toys?
-
----
-
-class: twitter
-
-# VMs
-
---
-
-- All the software preinstalled
-
---
-
-- Easy distribution
-
---
-
-- May be less than pleasant to use
-
----
-
-class: twitter
-
-# Containers
-
---
-
-- Oooh, shiny!
-
---
-
-- Slicker than VMs!
-
---
-
-- Application containers and toolchains don't match
-
----
-
-class: twitter
-
-# What else?
-
----
-
-class: twitter
-
-# Nix features
-
-- Operates in userland
-
-- Deterministic packages and environments
-
-- Atomic upgrades
-
-- Rollbacks
-
-- Build environment management
-
-- Multiple versions of packages side-by-side on a single system
-
-- Runs on Linux and macOS
-
----
-
-class: twitter
-
-# Functional approach
-
-- Installing or upgrading package won't break other packages
-
-- Every package is installed in a separate directory
-
-- It allows easy rollback
-
-- Prevents inconsistent state
-
----
-
-class: twitter
-
-# Good for multi-user environments
-
-- Several users can install packages without superuser privileges
-
-- Different users can have different package versions
-
----
-
-class: twitter
-
-# Projects with direnv
-
-Uses `nix-shell`.
-
-Automatically sets up development environment whenever you enter a directory.
-
-You can pin the packages version.
-
----
-
-.envrc
+# Building Docker containers
 
 ```bash
-use_nix
-. env/bin/activate
-```
-
-default.nix
-
-```nix
-{ pkgs ? import <nixpkgs> {} }:
-
-with pkgs;
-
-let
-  gcc = gcc10;
-in
-mkShell {
-  buildInputs = [ cmake ccache gcc git gnumake icecream ];
-}
+docker build . -t image:latest
 ```
 
 ---
 
-class: twitter
+# Dockerfile
 
-# How does it compare to the rest?
-
-- Still not as easy as Homebrew
-
-- GNU Guix using GNU Scheme (LISP)
-
-- ... if you love parentheses, you'll love GUIX!
-
-- ... also works with direnv!
+```dockerfile
+FROM ubuntu:rolling
+ADD files_from_host path_in_container
+RUN apt-get update && \
+    apt-get -y install my_package && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -r /var/lib/apt/lists/*
+ENTRYPOINT ["my_command"]
+EXPOSE 8080
+```
 
 ---
 
-class: twitter
+# Building C++ code
 
-# Managing Git hooks
+![CMake](img/CMake.svg)
+
+---
+
+# What we want to achieve
+
+- C++ deliverables built using CMake
+- packaged as a DEB, RPM and Windows installer
+- installed inside a Docker container image
+
+---
+
+# CMake: simple target
+
+```cmake
+add_executable(customer main.cpp)
+target_compile_features(customer PRIVATE cxx_std_17)
+target_link_libraries(customer PRIVATE libcustomer)
+set_target_properties(customer PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_options(customer PRIVATE ${MY_COMPILE_FLAGS})
+```
+
+---
+
+# CMake: installation
+
+```cmake
+install(TARGETS libcustomer customer)
+
+# optionally:
+#  - headers
+#  - licenses
+#  - Config and Targets files
+```
+
+---
+
+# CPack: creating packages
+
+```cmake
+set(CPACK_PACKAGE_VENDOR "Authors")
+set(CPACK_PACKAGE_CONTACT "author@example.com")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+    "Library and app for the Customer microservice")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+```
+
+---
+
+# CPack: adding a DEB package
+
+```cmake
+list(APPEND CPACK_GENERATOR DEB)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}
+    libcpprest2.10 (>= 2.10.2-6)")
+```
+
+---
+
+# CPack: finishing touches
+
+```cmake
+set(CPACK_SOURCE_IGNORE_FILES /.git /dist /.*build.* /\\\\.DS_Store)
+
+include(CPack)
+```
+
+---
+
+# Containerizing: Dockerfile
+
+```dockerfile
+FROM ubuntu:rolling
+ADD Customer-1.0.0-Linux.deb .
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install ./Customer-1.0.0-Linux.deb && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -r /var/lib/apt/lists/* Customer-1.0.0-Linux.deb
+ENTRYPOINT ["/usr/bin/customer"]
+EXPOSE 8080
+```
+
+---
+
+# Finding Docker from CMake
+
+```cmake
+find_program(Docker_EXECUTABLE docker)
+if (NOT Docker_EXECUTABLE)
+    message(FATAL_ERROR "Docker not found")
+endif()
+```
+
+---
+
+# Containerizing: CMake target for packaging
+
+```cmake
+add_custom_target(
+    customer-deb
+    COMMENT "Creating Customer DEB package"
+    COMMAND ${CMAKE_CPACK_COMMAND} -G DEB
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    VERBATIM)
+add_dependencies(customer-deb customer)
+```
+
+---
+
+# Containerizing: CMake target for Docker image
+
+```cmake
+add_custom_target(
+    docker
+    COMMENT "Preparing Docker image"
+    COMMAND ${Docker_EXECUTABLE} build ${PROJECT_BINARY_DIR} -t
+            customer:${PROJECT_VERSION} -t customer:latest
+    VERBATIM)
+add_dependencies(docker customer-deb)
+```
+
+---
+
+# The result
+
+TODO: commands and results of running a Docker service
+
+---
+
+# Achieving reproducible builds
+
+- we have a container
+--
+...
+- but built using developer's environment
+--
+
+- let's contain the whole build instead
+
+---
+
+# Multiphase builds
+
+- Docker feature for complex builds
+--
+
+- resulting in minimal-sized images
+--
+
+- can use multiple FROM statements
+--
+
+- we can have one step for building
+--
+
+- and another for gathering results
+
+---
+
+# Multiphase Dockerfile
+
+
+```dockerfile
+
+```
+
+---
+
+# The end result
+
+---
+
+# Debugging
+
+- remote, using gdbserver
+--
+
+```dockerfile
+FROM customer:latest
+RUN apt-get update && apt-get install gdbserver
+```
+
+---
+
+# Managing toolchains with Docker
+
+How do you make sure everybody is running the same toolchain?
+
+- Pre-installed machine from IT
+
+- VM images
+
+- chroot/container images
+
+- application images
+
+What else?
 
 --
 
-- There's an app for that!
-
---
-
-- pre-commit
+And then: how do you upgrade this snowflake solution?
 
 ---
-
-class: twitter
-
-# pre-commit
-
-```
-repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
-    hooks:
-      - id: check-added-large-files
-      - id: check-byte-order-marker
-      - id: check-case-conflict
-      - id: check-merge-conflict
-      - id: mixed-line-ending
-      - id: no-commit-to-branch
-        args: [--branch, master]
-      - id: trailing-whitespace
-```
-
----
-
-class: twitter
-
-# pre-commit
-
-```
-#[...]
-  - repo: https://github.com/pocc/pre-commit-hooks
-    rev: v1.1.0
-    hooks:
-      - id: clang-format
-        args: [--style=Google, -i]
-        exclude: 3rd-parties/
-  - repo: https://github.com/iconmaster5326/cmake-format-pre-commit-hook
-    rev: v0.6.9
-    hooks:
-      - id: cmake-format
-        exclude: 3rd-parties/
-```
-
----
-
-class: wrapper, center, middle
-
-# Packaging
-
----
-
-class: wrapper, center, middle
 
 # Conan
 
-???
-- a barbarian friend
-- may not let us have his axe
-- still helpful
-
----
-
-class: twitter
-
-# Conan
-
-- Package manager for C++
+Are you familiar with Conan?
 
 --
 
-- Written in Python
+Conan solves a lot of problems related to C++ dependency management.
 
 --
 
-- Like pip/npm/gem but with full toolchain support
+If you know cpan, pip, npm, or gem, Conan is kinda similar.
 
 --
 
-- Uses binaries where possible
+But since it deals with C++, it's a **bit** more complicated.
 
----
-
-class: twitter
-
-# Conanfile - specifying dependencies
-
-```
-[requires]
-flac/1.3.3
-spdlog/[>=1.4.1]
-
-[options]
-cpprestsdk:shared=True
-
-[generators]
-CMakeDeps
-CMakeToolchain
-```
-
----
-
-class: twitter
-
-# CMake integration
-
-```
-list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
-
-find_package(cpprestsdk CONFIG REQUIRED)
-
-target_link_libraries(client PUBLIC cpprestsdk::cpprest)
-```
-
----
-
-class: twitter
-
-# Consuming packages using Conan
-
-- packages can be consumed in many different build systems
-- easy to add your own
-- transparent CMake integration
-    - `cmake_find_package`
-    - `CMakeDeps`
-
----
-
-# Packaging using Conan
-
-- helpers for common build systems
-- Conan recipes can package code from other repos
 --
 
-- if CMake package supports installation:
+Main strength: install C++ libraries without superuser permissions.
 
-```python
-    def package_info(self):
-        self.cpp_info.libs = ["my_lib"]
+---
 
-    def package(self):
-        cmake = CMake(self)
-        cmake.configure()
-        cmake.install()
+# Conan base images
+
+Conan provides nice base images on Docker Hub
+
+Different versions of GCC, from GCC 4.6 up to GCC 11
+
+Different versions of Clang, from 3.8 to 10
+
+Visual Studio 14 and 15 images (not redistributable)
+
+---
+
+# Conan base images
+
+x86_64, armv7, armv7hf, armv8, Android toolchains
+
+May be used as JNLP slaves for use with Jenkins
+
+Possible to use with Travis and other container-based CI/CD systems
+
+Only suitable for linux/amd64 hosts (unless Visual Studio containers)
+
+---
+
+# Building with Docker
+
+```bash
+docker run --rm -ti -v conan-gcc10:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \ 
+conanio/gcc10 conan install ..
+
+docker run --rm -ti -v conan-gcc10:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
+conanio/gcc10 cmake ..
+
+docker run --rm -ti -v conan-gcc10:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
+conanio/gcc10 cmake --build .
 ```
 
 ---
 
-class: twitter
+# Building with Docker
 
-# Packaging using Conan, cont'd
+Or:
 
-```python
-def package(self):
-    ...
-    self.run("autoconf", run_environment=True)
-    self._autotools = AutoToolsBuildEnvironment(self)
-    self._autotools.make()
-    ...
-    self._autotools.install()
-    ...
-```
-???
-- `self.run` can run git clone, esoteric build commands etc
-- `package()` then copies the result
-
----
-
-class: twitter
-
-# Taming rebelous packages with Conan
-
-- when all else fails, there's `self.run` and `self.copy`
-```python
-    self.copy('LICENSE', dst='licenses', src=self._source_folder)
-```
---
-```python
-    self.run('nmake install DESTROOT=%s' % self.package_folder)
-```
---
-```python
-    def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
-        if not self.options.shared:
-            self.cpp_info.defines = ["__PTW32_STATIC_LIB"]
+```bash
+docker run --rm -ti -v conan-gcc10:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
+conanio/gcc10 \
+bash -c 'conan install .. && cmake .. && cmake --build .
 ```
 
-???
-- `package_info()` specifies produced libraries, dirs and flags
-
 ---
 
-class: wrapper, center, middle
+# Building with Docker
 
-# Toolchains
+Also:
 
----
-
-class: twitter
-
-# CMake toolchains
-
-- `CMAKE_TOOLCHAIN_FILE`
-???
-- CMake will detect toolchain for host
-- use this if you want to specify another one
---
- specifies:
-    - compilers
-    - paths for build tools, libraries, etc.
-    - platform-specific info
---
-- can be used to easier specify another compiler for host environment
-
----
-
-class: twitter
-
-# Conan profiles
-
-```ini
-[settings]
-os=Linux
-distro=RHEL6
-arch=armv7
-arch_build=x86_64
-compiler=clang
-compiler.version=11.0
-compiler.libcxx=libc++
-build_type=Release
-[options]
-[env]
+```bash
+alias conaniogcc10='docker run --rm -ti -v conan-gcc10:/home/conan/.conan -v $PWD:/home/conan/src -w /home/conan/src/dockerbuild conanio/gcc10'
+conaniogcc10 conan install ..
+conaniogcc10 cmake ..
+conaniogcc10 cmake --build .
 ```
-???
-- can be used for cross compiling too
-- can target specific Linux distros
-- can setup env vars which build system will use
 
 ---
 
-class: twitter
+# Upgrading the toolchain
 
-# Conan toolchains
+Upgrade is as easy as switching `gcc10` to `gcc11` in the command line. That's it.
 
-- build system specific toolchain generators
-- CMakeToolchain for CMake
-- can be combined with CMakeDeps
-- produces a toolchain file for CMake
-    ```bash
-    cmake <src_dir> -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
-    ```
-???
-- doesn't contain all required settings yet :(
-- fortunately Conan describes how to cross-compile in [containers](https://docs.conan.io/en/latest/howtos/run_conan_in_docker.html)
+```bash
+docker run --rm -ti -v conan-gcc11:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
+conanio/gcc11 \
+bash -c 'conan install .. && cmake .. && cmake --build .
+```
 
 ---
 
-class: twitter
+class: middle, split50
 
-# CPack
+# What's inside
+.left-pane[
+
+A compiler with its toolchain (duh!)
+
+wget and curl
+
+git and subversion
+
+nasm
+
+make and ninja
+
+pkg-config
+
+]
+.right-pane[
+
+autotools
+
+JFrog CLI
+
+Conan
+
+CMake (3.18.2)
+
+Python (Scons, Waf)
+
+Android NDK (where suitable)
+
+Conan profiles for cross-compilers (where suitable)
+
+]
+
+---
+
+# Anything lacking? No problem!
+
+```dockerfile
+FROM conanio/gcc10
+RUN sudo apt-get update && \
+    sudo apt-get -y --no-install-recommends install qt5-default && \
+    sudo apt-get autoremove -y && \
+    sudo apt-get clean && \
+    sudo rm -r /var/lib/apt/lists/*
+```
+
+---
+
+# Running external services
+
+`docker run --rm postgres`
+
+`docker run --rm -e POSTGRES_PASSWORD=iLoveDocker postgres`
+
+---
+
+# Running external services
+
+Also suitable for:
+
+- Nginx
+
+- Redis
+
+- Other caches
+
+- Other DBs
+
+- IceCC scheduler
+
+- Most of whetever else you need
+
+---
+
+# Docker Compose
+
+`docker-compose up` to run **anything** and **everything**
+
+- Lets you automate container configuration
+
+- Can set up and tear down other resources (networks and volumes) and manages
+  their lifecycle
+
+- Multiple levels of overrides possible
+
+- Makes it easy to define and connect complex services
+
+---
+
+```yaml
+version: "3.8"
+services:
+  redis:
+    image: redis
+    networks:
+      - backend
+  db:
+    image: postgres
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+    networks:
+      - backend
+  customer:
+    image: customer:1.0.1
+    networks:
+      - backend
+      - frontend
+```
+
+---
+
+# Building with Docker Compose
+
+Besides running several services in parallel, Docker Compose can be used for
+documenting one-off commands.
 
 --
 
-- Generates sources and binary packages
+Use cases:
 
 --
 
-- Could spit out NSIS installers and macOS dmg archives
+- Multiple compilers side by side
 
 --
 
-- Produces Deb and RPM on supported platforms
+- Builds for different distros
+
+--
+
+- Easy cross-compilation
+
+--
+
+- Compiling against different versions of dependencies
 
 ---
 
-class: twitter
+```yaml
+version: "3.8"
+services:
+  gcc-10:
+    image: conanio/gcc10
+    volumes:
+      - conan-gcc10:/home/conan/.conan
+      - .:/home/conan/src
+    working_dir: /home/conan/src/dockerbuild
+  gcc-11:
+    image: conanio/gcc11
+    volumes:
+      - conan-gcc11:/home/conan/.conan
+      - .:/home/conan/src
+    working_dir: /home/conan/src/dockerbuild
+volumes:
+  conan-gcc10:
+  conan-gcc11:
 
-# AppImage / Flatpack
-
-- The new way to package portable Linux apps
+```
 
 ---
 
-<img src="img/prettyplease.jpg" style="width: auto; height: 600px"/>
+# Building with Docker Compose
+
+```bash
+docker-compose run gcc-10 \
+bash -c 'conan install .. && cmake .. && cmake --build .'
+```
+
+---
+
+# CI/CD with Docker
+
+--
+
+- Jenkins
+
+--
+
+- Travis
+
+--
+
+- CircleCI
+
+--
+
+- Gitlab CI
+
+--
+
+- GitHub Actions
+
+---
+
+# Gitlab CI
+
+```yaml
+.build-ubuntu-lts:
+    image: conanio/conangcc8
+    script:
+      - conan install ..
+      - cmake ..
+      - cmake --build .
+    artifacts:
+      paths:
+        - build/coverage/
+      expire_in: 1 week
+
+[...]
+```
+
+---
+
+# Gitlab CI
+
+```yaml
+[...]
+build-gcc10:
+    extends: .build-ubuntu-lts
+    image: conanio/gcc10
+    variables:
+        CC: '/usr/bin/gcc-10'
+        CXX: '/usr/bin/g++-10'
+```
+
+---
+
+# CircleCI
+
+```yaml
+version: 2.1
+
+executors:
+  gcc10:
+    docker:
+      - image: conanio/gcc10
+jobs:
+  build:
+    executor: gcc10
+    steps:
+      - run:
+          command: conan install .. && cmake .. && cmake --build .
+```
+
+---
+
+# GitHub Actions
+
+```yaml
+jobs:
+  build:
+    strategy:
+      matrix:
+        docker_image:
+          - conanio/gcc10
+
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@master
+        with:
+          python-version: '3.7'
+      - name: Building and publish the package
+        run: conan install .. && cmake .. && cmake --build .
+```
+
+---
+
+# Benefits of Docker for building
+
+- Same toolchain and dependencies everywhere
+
+- Easy to change the configuration (via a Dockerfile)
+
+- Same toolchain locally as on CI/CD
+
+- Easy to test new features
+
+- Massive parallel builds with different settings manageable from a single file
+
+- Easy to distribute the images
+
+- Lower overhead than VMs
+
+- Power to the people
 
 ---
 
@@ -1005,7 +768,7 @@ class: center, middle, split50
 ]
 .right-pane[
 .left[
-Our brand new book is coming out!
+Buy our new best-selling book!
 
 Featuring:
 - More on building and packaging
@@ -1013,9 +776,9 @@ Featuring:
 - Leveraging C++20 features
 - Microservices and cloud-native C++
 
-Available from April 23rd 
+Available on [Packt](https://www.packtpub.com/product/software-architecture-with-c/9781838554590) 
 
-on [Packt](https://www.packtpub.com/product/software-architecture-with-c/9781838554590) and [Amazon](https://www.amazon.com/gp/aw/d/1838554599/)
+and [Amazon](https://www.amazon.com/gp/aw/d/1838554599/)
 ]
 ]
 
@@ -1043,12 +806,8 @@ role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" height="1em"
 
 # Attributions
 
-- _Building Site_ photo by <a href="https://unsplash.com/@fkaregan?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Samuel Regan-Asante</a> on <a href="https://unsplash.com/?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>
-
-- _Icecream rainbow_ photo by <a href="https://unsplash.com/@lamaroscu?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Lama Roscu</a> on <a href="https://unsplash.com/s/photos/icecream?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>
-
-- Sundae image by <a href="https://pixabay.com/users/blende12-201217/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2300531">Gerhard G.</a> from <a href="https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2300531">Pixabay</a>
-
+- Logo of Docker, a Linux container engine byi dotCloud, Inc., [source](https://en.wikipedia.org/wiki/File:Docker_%28container_engine%29_logo.svg)
+- Logo of Cmake, Cmake team. The original uploader was Francesco Betti Sorbelli at Italian Wikipedia.. Vectorized by Magasjukur2, [source](https://en.wikipedia.org/wiki/File:Cmake.svg)
 
 </textarea>
     <script src="remark.js"></script>

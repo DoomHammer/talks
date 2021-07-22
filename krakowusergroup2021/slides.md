@@ -45,6 +45,10 @@ role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" height="1em"
 - packaging C++ code inside Docker
 - multi-stage builds
 - debugging C++ code inside containers
+- managing toolchains with Docker
+- running external services
+- Docker Compose
+- CI/CD with Docker
 
 <!--
 
@@ -311,6 +315,423 @@ TODO: commands and results of running a Docker service
 FROM customer:latest
 RUN apt-get update && apt-get install gdbserver
 ```
+
+---
+
+# Managing toolchains with Docker
+
+How do you make sure everybody is running the same toolchain?
+
+- Pre-installed machine from IT
+
+- VM images
+
+- chroot/container images
+
+- application images
+
+What else?
+
+--
+
+And then: how do you upgrade this snowflake solution?
+
+---
+
+# Conan
+
+Are you familiar with Conan?
+
+--
+
+Conan solves a lot of problems related to C++ dependency management.
+
+--
+
+If you know cpan, pip, npm, or gem, Conan is kinda similar.
+
+--
+
+But since it deals with C++, it's a **bit** more complicated.
+
+--
+
+Main strength: install C++ libraries without superuser permissions.
+
+---
+
+# Conan base images
+
+Conan provides nice base images on Docker Hub
+
+Different versions of GCC, from GCC 4.6 up to GCC 11
+
+Different versions of Clang, from 3.8 to 10
+
+Visual Studio 14 and 15 images (not redistributable)
+
+---
+
+# Conan base images
+
+x86_64, armv7, armv7hf, armv8, Android toolchains
+
+May be used as JNLP slaves for use with Jenkins
+
+Possible to use with Travis and other container-based CI/CD systems
+
+Only suitable for linux/amd64 hosts (unless Visual Studio containers)
+
+---
+
+# Building with Docker
+
+```bash
+docker run --rm -ti -v conan-gcc10:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \ 
+conanio/gcc10 conan install ..
+
+docker run --rm -ti -v conan-gcc10:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
+conanio/gcc10 cmake ..
+
+docker run --rm -ti -v conan-gcc10:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
+conanio/gcc10 cmake --build .
+```
+
+---
+
+# Building with Docker
+
+Or:
+
+```bash
+docker run --rm -ti -v conan-gcc10:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
+conanio/gcc10 \
+bash -c 'conan install .. && cmake .. && cmake --build .
+```
+
+---
+
+# Building with Docker
+
+Also:
+
+```bash
+alias conaniogcc10='docker run --rm -ti -v conan-gcc10:/home/conan/.conan -v $PWD:/home/conan/src -w /home/conan/src/dockerbuild conanio/gcc10'
+conaniogcc10 conan install ..
+conaniogcc10 cmake ..
+conaniogcc10 cmake --build .
+```
+
+---
+
+# Upgrading the toolchain
+
+Upgrade is as easy as switching `gcc10` to `gcc11` in the command line. That's it.
+
+```bash
+docker run --rm -ti -v conan-gcc11:/home/conan/.conan \
+-v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
+conanio/gcc11 \
+bash -c 'conan install .. && cmake .. && cmake --build .
+```
+
+---
+
+class: middle, split50
+
+# What's inside
+.left-pane[
+
+A compiler with its toolchain (duh!)
+
+wget and curl
+
+git and subversion
+
+nasm
+
+make and ninja
+
+pkg-config
+
+]
+.right-pane[
+
+autotools
+
+JFrog CLI
+
+Conan
+
+CMake (3.18.2)
+
+Python (Scons, Waf)
+
+Android NDK (where suitable)
+
+Conan profiles for cross-compilers (where suitable)
+
+]
+
+---
+
+# Anything lacking? No problem!
+
+```dockerfile
+FROM conanio/gcc10
+RUN sudo apt-get update && \
+    sudo apt-get -y --no-install-recommends install qt5-default && \
+    sudo apt-get autoremove -y && \
+    sudo apt-get clean && \
+    sudo rm -r /var/lib/apt/lists/*
+```
+
+---
+
+# Running external services
+
+`docker run --rm postgres`
+
+`docker run --rm -e POSTGRES_PASSWORD=iLoveDocker postgres`
+
+---
+
+# Running external services
+
+Also suitable for:
+
+- Nginx
+
+- Redis
+
+- Other caches
+
+- Other DBs
+
+- IceCC scheduler
+
+- Most of whetever else you need
+
+---
+
+# Docker Compose
+
+`docker-compose up` to run **anything** and **everything**
+
+- Lets you automate container configuration
+
+- Can set up and tear down other resources (networks and volumes) and manages
+  their lifecycle
+
+- Multiple levels of overrides possible
+
+- Makes it easy to define and connect complex services
+
+---
+
+```yaml
+version: "3.8"
+services:
+  redis:
+    image: redis
+    networks:
+      - backend
+  db:
+    image: postgres
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+    networks:
+      - backend
+  customer:
+    image: customer:1.0.1
+    networks:
+      - backend
+      - frontend
+```
+
+---
+
+# Building with Docker Compose
+
+Besides running several services in parallel, Docker Compose can be used for
+documenting one-off commands.
+
+--
+
+Use cases:
+
+--
+
+- Multiple compilers side by side
+
+--
+
+- Builds for different distros
+
+--
+
+- Easy cross-compilation
+
+--
+
+- Compiling against different versions of dependencies
+
+---
+
+```yaml
+version: "3.8"
+services:
+  gcc-10:
+    image: conanio/gcc10
+    volumes:
+      - conan-gcc10:/home/conan/.conan
+      - .:/home/conan/src
+    working_dir: /home/conan/src/dockerbuild
+  gcc-11:
+    image: conanio/gcc11
+    volumes:
+      - conan-gcc11:/home/conan/.conan
+      - .:/home/conan/src
+    working_dir: /home/conan/src/dockerbuild
+volumes:
+  conan-gcc10:
+  conan-gcc11:
+
+```
+
+---
+
+# Building with Docker Compose
+
+```bash
+docker-compose run gcc-10 \
+bash -c 'conan install .. && cmake .. && cmake --build .'
+```
+
+---
+
+# CI/CD with Docker
+
+--
+
+- Jenkins
+
+--
+
+- Travis
+
+--
+
+- CircleCI
+
+--
+
+- Gitlab CI
+
+--
+
+- GitHub Actions
+
+---
+
+# Gitlab CI
+
+```yaml
+.build-ubuntu-lts:
+    image: conanio/conangcc8
+    script:
+      - conan install ..
+      - cmake ..
+      - cmake --build .
+    artifacts:
+      paths:
+        - build/coverage/
+      expire_in: 1 week
+
+[...]
+```
+
+---
+
+# Gitlab CI
+
+```yaml
+[...]
+build-gcc10:
+    extends: .build-ubuntu-lts
+    image: conanio/gcc10
+    variables:
+        CC: '/usr/bin/gcc-10'
+        CXX: '/usr/bin/g++-10'
+```
+
+---
+
+# CircleCI
+
+```yaml
+version: 2.1
+
+executors:
+  gcc10:
+    docker:
+      - image: conanio/gcc10
+jobs:
+  build:
+    executor: gcc10
+    steps:
+      - run:
+          command: conan install .. && cmake .. && cmake --build .
+```
+
+---
+
+# GitHub Actions
+
+```yaml
+jobs:
+  build:
+    strategy:
+      matrix:
+        docker_image:
+          - conanio/gcc10
+
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@master
+        with:
+          python-version: '3.7'
+      - name: Building and publish the package
+        run: conan install .. && cmake .. && cmake --build .
+```
+
+---
+
+# Benefits of Docker for building
+
+- Same toolchain and dependencies everywhere
+
+- Easy to change the configuration (via a Dockerfile)
+
+- Same toolchain locally as on CI/CD
+
+- Easy to test new features
+
+- Massive parallel builds with different settings manageable from a single file
+
+- Easy to distribute the images
+
+- Lower overhead than VMs
+
+---
+
+# Benefits of Docker for building
+
+- Power to the people
 
 ---
 
