@@ -105,7 +105,7 @@ blockquote>p {
     font-size: 28px;
     padding: 1em 2em;
     color: #272727;
-    background-size: cover;
+    background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }

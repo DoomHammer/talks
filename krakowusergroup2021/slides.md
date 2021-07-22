@@ -41,12 +41,12 @@ role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" height="1em"
 # Agenda
 
 - Docker refresher: consuming and producing packages
-- building C++ applications using CMake
-- packaging C++ code inside Docker
-- multi-stage builds
-- debugging C++ code inside containers
-- managing toolchains with Docker
-- running external services
+- CMake: building, installing and packaging C++
+- Creating Docker images using CMake deliverables
+- Multi-stage builds
+- Debugging C++ code inside containers
+- Managing toolchains with Docker
+- Running external services
 - Docker Compose
 - CI/CD with Docker
 
@@ -76,9 +76,10 @@ Czesc 2:
 
 ---
 
-# Docker
+class: wrapper, center, middle
 
-![Docker](img/Docker_container_engine_logo.svg)
+<img src="img/Docker_container_engine_logo.svg" style="width: 90%" />
+
 
 ???
 - lightweight, helps deal with environment issues
@@ -87,21 +88,15 @@ Czesc 2:
 
 ---
 
-# Running Docker containers in a nutshell
+# Running Docker containers
 
-`docker run -i -t --rm`
---
-
-`-e FOO=bar`
---
-
-`-p 8080:80/udp`
---
-
-`-v /path/on/host:/path/in/container:ro`
---
-
-`image:latest`
+```bash
+docker run -i -t --rm \
+    -e FOO=bar \
+    -p 8080:80/udp \
+    -v /path/on/host:/path/in/container:ro \
+    image:latest
+```
 
 ---
 
@@ -131,15 +126,7 @@ EXPOSE 8080
 
 # Building C++ code
 
-![CMake](img/CMake.svg)
-
----
-
-# What we want to achieve
-
-- C++ deliverables built using CMake
-- packaged as a DEB, RPM and Windows installer
-- installed inside a Docker container image
+<center><img src="img/CMake.svg" style="width: 40%" /></center>
 
 ---
 
@@ -208,7 +195,8 @@ include(CPack)
 FROM ubuntu:rolling
 ADD Customer-1.0.0-Linux.deb .
 RUN apt-get update && \
-    apt-get -y --no-install-recommends install ./Customer-1.0.0-Linux.deb && \
+    apt-get -y --no-install-recommends install \
+        ./Customer-1.0.0-Linux.deb && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -r /var/lib/apt/lists/* Customer-1.0.0-Linux.deb
@@ -218,7 +206,7 @@ EXPOSE 8080
 
 ---
 
-# Finding Docker from CMake
+# CMake: Finding Docker
 
 ```cmake
 find_program(Docker_EXECUTABLE docker)
@@ -229,7 +217,7 @@ endif()
 
 ---
 
-# Containerizing: CMake target for packaging
+# CMake: target for packaging
 
 ```cmake
 add_custom_target(
@@ -243,9 +231,12 @@ add_dependencies(customer-deb customer)
 
 ---
 
-# Containerizing: CMake target for Docker image
+# CMake: Docker image target
 
 ```cmake
+configure_file(${PROJECT_SOURCE_DIR}/Dockerfile 
+               ${PROJECT_BINARY_DIR}/Dockerfile COPYONLY)
+
 add_custom_target(
     docker
     COMMENT "Preparing Docker image"
@@ -254,12 +245,6 @@ add_custom_target(
     VERBATIM)
 add_dependencies(docker customer-deb)
 ```
-
----
-
-# The result
-
-TODO: commands and results of running a Docker service
 
 ---
 
@@ -295,14 +280,24 @@ TODO: commands and results of running a Docker service
 
 # Multiphase Dockerfile
 
-
 ```dockerfile
+FROM builder:latest AS build
+WORKDIR /build_dir
+RUN cmake --build . --target customer-deb
 
+FROM ubuntu:rolling
+COPY --from=build /build_dir/Customer-1.0.0-Linux.deb .
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install \
+        ./Customer-1.0.0-Linux.deb && \
+    apt-get autoremove -y && apt-get clean && \
+    rm -r /var/lib/apt/lists/* Customer-1.0.0-Linux.deb
+ENTRYPOINT ["/usr/bin/customer"]
+EXPOSE 8080
 ```
 
----
-
-# The end result
+???
+- mount src, build, ccache etc. using `-v`
 
 ---
 
@@ -753,7 +748,6 @@ Featuring:
 - Microservices and cloud-native C++
 
 Available on [Packt](https://www.packtpub.com/product/software-architecture-with-c/9781838554590) 
-
 and [Amazon](https://www.amazon.com/gp/aw/d/1838554599/)
 ]
 ]
@@ -777,6 +771,18 @@ data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16"
 role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" height="1em"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>[@adr_ostrowski](https://twitter.com/adr_ostrowski)
 
 <http://aostrowski.github.io>
+
+---
+
+class: wrapper, center, middle
+
+# Thank you!
+
+![DoomHammer](img/doomhammer.jpg)
+
+<https://github.com/DoomHammer> | [@doomhammerng](https://twitter.com/doomhammerng)
+
+<https://doomhammer.info>
 
 ---
 
