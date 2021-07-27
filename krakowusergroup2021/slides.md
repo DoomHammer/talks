@@ -317,13 +317,23 @@ RUN apt-get update && apt-get install gdbserver
 
 How do you make sure everybody is running the same toolchain?
 
+--
+
 - Pre-installed machine from IT
+
+--
 
 - VM images
 
+--
+
 - chroot/container images
 
+--
+
 - application images
+
+--
 
 What else?
 
@@ -405,7 +415,7 @@ Or:
 docker run --rm -ti -v conan-gcc10:/home/conan/.conan \
 -v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
 conanio/gcc10 \
-bash -c 'conan install .. && cmake .. && cmake --build .
+bash -c 'conan install .. && cmake .. && cmake --build .'
 ```
 
 ---
@@ -431,7 +441,7 @@ Upgrade is as easy as switching `gcc10` to `gcc11` in the command line. That's i
 docker run --rm -ti -v conan-gcc11:/home/conan/.conan \
 -v $PWD:/home/conan/src -w /home/conan/src/dockerbuild \
 conanio/gcc11 \
-bash -c 'conan install .. && cmake .. && cmake --build .
+bash -c 'conan install .. && cmake .. && cmake --build .'
 ```
 
 ---
@@ -509,7 +519,7 @@ Also suitable for:
 
 - IceCC scheduler
 
-- Most of whetever else you need
+- Most of whatever else you need
 
 ---
 
@@ -727,6 +737,12 @@ jobs:
 # Benefits of Docker for building
 
 - Power to the people
+
+---
+
+class: center, middle
+
+# Story Time!
 
 ---
 
