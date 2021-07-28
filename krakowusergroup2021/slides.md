@@ -126,7 +126,7 @@ EXPOSE 8080
 
 # Building C++ code
 
-<center><img src="img/CMake.svg" style="width: 40%" /></center>
+<center><img src="img/Cmake.svg" style="width: 40%" /></center>
 
 ---
 
