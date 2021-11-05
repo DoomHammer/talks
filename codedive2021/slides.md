@@ -833,25 +833,61 @@ jobs:
 
 # Benefits of Docker for building
 
+--
+
 - Same toolchain and dependencies everywhere
+
+--
 
 - Easy to change the configuration (via a Dockerfile)
 
+--
+
 - Same toolchain locally as on CI/CD
 
+--
+
 - Easy to test new features
-
-- Massive parallel builds with different settings manageable from a single file
-
-- Easy to distribute the images
-
-- Lower overhead than VMs
 
 ---
 
 # Benefits of Docker for building
 
-- Power to the people
+--
+
+- Massive parallel builds with different settings manageable from a single file
+
+--
+
+- Easy to distribute the images
+
+--
+
+- Lower overhead than VMs
+
+--
+
+- **Power to the people**
+
+---
+
+# Summary
+
+--
+
+- Same stuff on dev, CI, and production
+
+--
+
+- Getting 3rd-party stuff super-easy
+
+--
+
+- Integrating stuff only one YAML away
+
+--
+
+- Trying new stuff is tons of fun 
 
 ---
 
