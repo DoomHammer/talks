@@ -44,7 +44,35 @@ background-image: url(img/samuel-regan-asante-g9A2llpDObU-unsplash.jpg)
 
 class: wrapper, center, middle
 
+# CMake
+
+---
+
+exclude: true
+
+# Bazel
+
+https://bazel.build/
+
+---
+
+exclude: true
+
+# C++20's Modules
+
+TODO
+
+---
+
+class: wrapper, center, middle
+
 # Speeding up Builds
+
+---
+
+class: wrapper, center, middle
+
+# Ninja
 
 ---
 
@@ -122,29 +150,8 @@ or via build systems
 - Others:
   - system package manager - usually not the latest version
   - `brew install ccache`
+  - `nix-env -i ccache`
   - build from sources (CMake)
-
----
-
-class: wrapper, center, middle
-
-# Intermission: Brew
-
-![Homebrew](img/homebrew-256x256.png) <!-- TODO: can we use this image legally-speaking? -->
-
-https://brew.sh/
-
-???
-Package manager for macOS and Linux
-
-Why use it?
-- all files installed in one subtree - clean removal if needed
-- plethora of packages in recent versions
-  - Snap has old and unofficial CCache (3.7 vs brew's 4.2)
-
-Scoop for Windows
-
-Python has C++ software too, e. g. CMake (`pip install cmake`)
 
 ---
 
@@ -479,22 +486,6 @@ https://github.com/mozilla/sccache
 
 ---
 
-exclude: true
-
-# Bazel
-
-https://bazel.build/
-
----
-
-exclude: true
-
-# C++20's Modules
-
-TODO
-
----
-
 background-image: url(img/switch.jpg)
 
 ---
@@ -678,17 +669,22 @@ class: twitter
 ```
 #[...]
   - repo: https://github.com/pocc/pre-commit-hooks
-    rev: v1.1.0
+    rev: v1.3.4
     hooks:
       - id: clang-format
         args: [--style=Google, -i]
         exclude: 3rd-parties/
+      - id: clang-tidy
   - repo: https://github.com/iconmaster5326/cmake-format-pre-commit-hook
     rev: v0.6.9
     hooks:
       - id: cmake-format
         exclude: 3rd-parties/
 ```
+
+???
+
+oclint, uncrustify, cppcheck, cpplint, include-what-you-see
 
 ---
 
@@ -717,6 +713,16 @@ class: twitter
 --
 
 - uses binaries when possible
+
+---
+
+class: twitter
+
+# Installing Conan
+
+- `brew install ccache`
+- `nix-env -i ccache`
+- `pip install conan`
 
 ---
 
@@ -765,7 +771,7 @@ build_type=Release
 
 class: twitter
 
-# Conanfile
+# Conanfile - old style
 
 ```
 [requires]
@@ -780,7 +786,7 @@ cmake
 
 class: twitter
 
-# CMakeLists.txt
+# CMakeLists.txt - old style
 
 ```
 #[...]
