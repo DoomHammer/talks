@@ -68,8 +68,8 @@ role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" height="1em"
 
 # Agenda
 
-- Docker refresher: consuming and producing packages
 - CMake: building, installing and packaging C++
+- Docker refresher: consuming and producing packages
 - Creating Docker images using CMake deliverables
 - Multi-stage builds
 - Debugging C++ code inside containers
@@ -101,6 +101,85 @@ Czesc 2:
 - CI/CD z Docker + C++
 
 -->
+
+---
+
+# Building C++ code
+
+<center><img src="img/Cmake.svg" style="width: 40%" /></center>
+
+---
+
+# CMake: simple target
+
+```cmake
+add_executable(customer main.cpp)
+target_compile_features(customer PRIVATE cxx_std_17)
+target_link_libraries(customer PRIVATE libcustomer)
+set_target_properties(customer PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_options(customer PRIVATE ${MY_COMPILE_FLAGS})
+```
+
+---
+
+# CMake: installation
+
+```cmake
+install(TARGETS libcustomer customer)
+
+# optionally:
+#  - headers
+#  - licenses
+#  - Config and Targets files
+```
+
+---
+
+# CPack: creating packages
+
+```cmake
+set(CPACK_PACKAGE_VENDOR "Authors")
+set(CPACK_PACKAGE_CONTACT "author@example.com")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+    "Library and app for the Customer microservice")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+```
+
+---
+
+# CPack: adding a DEB package
+
+```cmake
+list(APPEND CPACK_GENERATOR DEB)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}
+    libcpprest2.10 (>= 2.10.2-6)")
+```
+
+---
+
+# CPack: finishing touches
+
+```cmake
+set(CPACK_SOURCE_IGNORE_FILES /.git /dist /.*build.* /\\\\.DS_Store)
+
+include(CPack)
+```
+
+---
+
+# CMake: target for packaging
+
+```cmake
+add_custom_target(
+    customer-deb
+    COMMENT "Creating Customer DEB package"
+    COMMAND ${CMAKE_CPACK_COMMAND} -G DEB
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    VERBATIM)
+add_dependencies(customer-deb customer)
+```
 
 ---
 
@@ -176,22 +255,6 @@ docker run -i -t --rm \
 
 ---
 
-# Building Docker containers
-
-```bash
-docker build . -t image:latest
-```
-
----
-
-# Building Docker containers
-
-```bash
-docker build $context [-t one_or_more_tags] [-f filename]
-```
-
----
-
 # Dockerfile
 
 ```dockerfile
@@ -212,71 +275,6 @@ Built-in cache mechanism, layers, subsequent builds may take less time
 
 ---
 
-# Building C++ code
-
-<center><img src="img/Cmake.svg" style="width: 40%" /></center>
-
----
-
-# CMake: simple target
-
-```cmake
-add_executable(customer main.cpp)
-target_compile_features(customer PRIVATE cxx_std_17)
-target_link_libraries(customer PRIVATE libcustomer)
-set_target_properties(customer PROPERTIES CXX_EXTENSIONS OFF)
-target_compile_options(customer PRIVATE ${MY_COMPILE_FLAGS})
-```
-
----
-
-# CMake: installation
-
-```cmake
-install(TARGETS libcustomer customer)
-
-# optionally:
-#  - headers
-#  - licenses
-#  - Config and Targets files
-```
-
----
-
-# CPack: creating packages
-
-```cmake
-set(CPACK_PACKAGE_VENDOR "Authors")
-set(CPACK_PACKAGE_CONTACT "author@example.com")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
-    "Library and app for the Customer microservice")
-set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-```
-
----
-
-# CPack: adding a DEB package
-
-```cmake
-list(APPEND CPACK_GENERATOR DEB)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}
-    libcpprest2.10 (>= 2.10.2-6)")
-```
-
----
-
-# CPack: finishing touches
-
-```cmake
-set(CPACK_SOURCE_IGNORE_FILES /.git /dist /.*build.* /\\\\.DS_Store)
-
-include(CPack)
-```
-
----
-
 # Containerizing: Dockerfile
 
 ```dockerfile
@@ -294,6 +292,22 @@ EXPOSE 8080
 
 ---
 
+# Building Docker containers
+
+```bash
+docker build . -t image:latest
+```
+
+---
+
+# Building Docker containers
+
+```bash
+docker build $context [-t one_or_more_tags] [-f filename]
+```
+
+---
+
 # CMake: Finding Docker
 
 ```cmake
@@ -301,20 +315,6 @@ find_program(Docker_EXECUTABLE docker)
 if (NOT Docker_EXECUTABLE)
     message(FATAL_ERROR "Docker not found")
 endif()
-```
-
----
-
-# CMake: target for packaging
-
-```cmake
-add_custom_target(
-    customer-deb
-    COMMENT "Creating Customer DEB package"
-    COMMAND ${CMAKE_CPACK_COMMAND} -G DEB
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    VERBATIM)
-add_dependencies(customer-deb customer)
 ```
 
 ---
@@ -429,6 +429,10 @@ FROM customer:latest
 RUN apt-get update && apt-get install gdbserver
 ```
 
+???
+
+Switch
+
 ---
 
 # Managing toolchains with Docker
@@ -481,15 +485,25 @@ But since it deals with C++, it's a **bit** more complicated.
 
 Main strength: install C++ libraries without superuser permissions.
 
+???
+
+FIXME: convert to shorter sentence
+
 ---
 
 # Conan base images
 
 Conan provides nice base images on Docker Hub
 
+--
+
 Different versions of GCC, from GCC 4.6 up to GCC 11
 
+--
+
 Different versions of Clang, from 3.8 to 10
+
+--
 
 Visual Studio 14 and 15 images (not redistributable)
 
@@ -497,11 +511,19 @@ Visual Studio 14 and 15 images (not redistributable)
 
 # Conan base images
 
+--
+
 x86_64, armv7, armv7hf, armv8, Android toolchains
+
+--
 
 May be used as JNLP slaves for use with Jenkins
 
+--
+
 Possible to use with Travis and other container-based CI/CD systems
+
+--
 
 Only suitable for linux/amd64 hosts (unless Visual Studio containers)
 
@@ -590,7 +612,7 @@ JFrog CLI
 
 Conan
 
-CMake (3.18.2)
+CMake
 
 Python (Scons, Waf)
 
