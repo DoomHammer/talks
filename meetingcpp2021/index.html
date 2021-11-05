@@ -639,13 +639,11 @@ default.nix
 ```nix
 { pkgs ? import <nixpkgs> {} }:
 
-with pkgs;
-
-let
-  gcc = gcc10;
-in
-mkShell {
-  buildInputs = [ cmake ccache gcc git gnumake icecream ];
+with pkgs; {
+  gcc11Env = stdenvNoCC.mkDerivation {
+    name = "gcc11-environment";
+    buildInputs = [ cmake ccache gcc11 git gnumake icecream ];
+  };
 }
 ```
 
@@ -655,6 +653,8 @@ class: twitter
 # How Does it Compare to The Rest?
 
 - Still not as easy as Homebrew
+
+- Getting a working GCC compiler from Git is still tricky
 
 - GNU Guix using GNU Scheme (LISP)
 
@@ -750,6 +750,28 @@ class: twitter
 
 class: twitter
 
+# Conan - downsides
+
+--
+
+- Binaries might be missing for your platform
+
+--
+
+- Sometimes resorts to system packages in a weird way
+
+--
+
+- Still in fast-paced development, things may not be entirely stable
+
+--
+
+- Creating your own packages requires some skill
+
+---
+
+class: twitter
+
 # Conan profile
 
 ```
@@ -759,7 +781,7 @@ os_build=Linux
 arch=x86_64
 arch_build=x86_64
 compiler=gcc
-compiler.version=9
+compiler.version=11
 compiler.libcxx=libstdc++11
 build_type=Release
 [options]
@@ -780,10 +802,6 @@ spdlog/[>=1.4.1]
 
 [generators]
 cmake
-
-[imports]
-bin, *.dll -> ./bin
-lib, *.dylib* -> ./bin
 ```
 
 ---
@@ -802,6 +820,30 @@ target_link_libraries(
   ${CONAN_LIBS}
   #[...]
 )
+```
+
+---
+
+class: twitter
+
+# Conanfile
+
+```
+[requires]
+ms-gsl/3.1.0
+
+[generators]
+CMakeDeps
+```
+
+---
+
+class: twitter
+
+# CMakeLists.txt
+
+```
+find_package(ms-gsl CONFIG REQUIRED)
 ```
 
 ---
@@ -845,17 +887,11 @@ class: center, middle, split50
 ]
 .right-pane[
 .left[
-Our brand new book is coming out!
+Check out the book
 
 Featuring:
-- More on building and packaging
+- More on architectural styles
 - Designing quality software
-- Leveraging C++20 features
-- Microservices and cloud-native C++
-
-Available from March 12th on [Packt](https://www.packtpub.com/product/software-architecture-with-c/9781838554590)
-
-And from April 9th on Amazon
 ]
 ]
 
@@ -884,7 +920,7 @@ class: center, middle, split50
   <img src="img/logos/habana_classic_blue.png" style="height: 30px; margin-top: -10px; border-radius: 0px"/>
 ]
 
-### <https://doomhammer.info/talks/cppeurope2021>
+### <https://doomhammer.info/talks/meetingcpp2021>
 
 ---
 
