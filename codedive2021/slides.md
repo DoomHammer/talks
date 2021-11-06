@@ -369,7 +369,6 @@ FROM builder:latest AS build
 WORKDIR /build_dir
 RUN --mount=type-cache,target=/home/builder/.cache/ccache \
     cmake --build . --target customer-deb
-
 FROM ubuntu:rolling
 COPY --from=build /build_dir/Customer-1.0.0-Linux.deb .
 RUN apt-get update && \
@@ -816,7 +815,15 @@ jobs:
       matrix:
         docker_image:
           - conanio/gcc10
+[...]
+```
 
+---
+
+# GitHub Actions
+
+```yaml
+[...]
     container:
       image: ${{ matrix.docker_image }}
       options: --user 0:0
@@ -824,7 +831,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-python@master
         with:
-          python-version: '3.7'
+          python-version: '3.8'
       - name: Building and publish the package
         run: conan install .. && cmake .. && cmake --build .
 ```

@@ -645,7 +645,7 @@ class: twitter
 
 # pre-commit
 
-```
+```yaml
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.5.0
@@ -666,7 +666,7 @@ class: twitter
 
 # pre-commit
 
-```
+```yaml
 #[...]
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.4
@@ -752,7 +752,7 @@ class: twitter
 
 # Conan profile
 
-```
+```ini
 [settings]
 os=Linux
 os_build=Linux
@@ -773,7 +773,7 @@ class: twitter
 
 # Conanfile - old style
 
-```
+```ini
 [requires]
 flac/1.3.3
 spdlog/[>=1.4.1]
@@ -788,7 +788,7 @@ class: twitter
 
 # CMakeLists.txt - old style
 
-```
+```cmake
 #[...]
 conan_basic_setup(TARGETS)
 #[...]
@@ -806,7 +806,7 @@ class: twitter
 
 # Conanfile
 
-```
+```cmake
 [requires]
 ms-gsl/3.1.0
 
@@ -820,7 +820,7 @@ class: twitter
 
 # CMakeLists.txt
 
-```
+```cmake
 find_package(ms-gsl CONFIG REQUIRED)
 ```
 
@@ -854,13 +854,37 @@ class: twitter
 
 # AppImage
 
-```
-
+```cmake
+  add_custom_target(bundle
+    COMMAND "${CMAKE_MAKE_PROGRAM}" DESTDIR=AppDir install
+    COMMAND bash -c
+      "${PSD}/tools/linuxdeploy.AppImage --appimage-extract"
+    COMMAND bash -c
+      "${PSD}/tools/linuxdeploy-plugin-qt.AppImage --appimage-extract"
+    COMMAND bash -c
+      "${CBD}/squashfs-root/usr/bin/linuxdeploy --appdir AppDir \
+      --output appimage --plugin qt -d ${CSD}/songcorder.desktop \
+      -i ${CSD}/src/res/songcorder.svg -e $<TARGET_FILE:songcorder>"
+    COMMENT "Build Appimage"
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    DEPENDS songcorder)
 ```
 
 ---
 
-<img src="img/prettyplease.jpg" style="width: auto; height: 600px"/>
+# AppImage
+
+```cmake
+  add_custom_command(TARGET bundle
+    POST_BUILD
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMAND bash -cv
+      "${PROJECT_SOURCE_DIR}/tools/build-installer.py \
+      --appimage Songcorder-*.AppImage -n Songcorder \
+      -i ${CMAKE_SOURCE_DIR}/src/res/songcorder.png"
+    COMMENT "Build installer from appimage"
+    VERBATIM)
+```
 
 ---
 
