@@ -70,17 +70,65 @@ background-image: url(img/samuel-regan-asante-g9A2llpDObU-unsplash.jpg)
 
 ---
 
-class: wrapper, center, middle
-
 # CMake
+
+<center><img src="img/Cmake.svg" style="width: 40%" /></center>
+
+???
+
+- build system generator
+- de facto standard for building C++ code
+- all examples from this talk base on CMake
+- a too short recap, just what we need for this talk
 
 ---
 
-exclude: true
+# CMake - installation
 
-# Bazel
+- system package managers, e. g. `apt install cmake`
+???
+- apt U20.4: 3.16.3
+--
 
-https://bazel.build/
+- `brew install cmake`
+???
+- brew as of 2021-11: 3.19.6 :(
+--
+
+- `pip install cmake>=3.21`
+--
+
+- `conan install -g virtualrunenv 'cmake/[>=3.21]@'`
+???
+- conan: need to `source activate_run.sh`
+
+---
+
+# CMake - usage
+
+```cmake
+add_executable(my_app main.cpp)
+target_link_libraries(myapp PUBLIC mylib)
+```
+--
+
+```cmake
+find_package(mydependency REQUIRED)
+target_link_libraries(mylib PRIVATE mydependency::mydependency)
+```
+???
+- `CMAKE_MODULE_PATH` and `CMAKE_PREFIX_PATH`
+---
+
+# CMake - integrating other tools
+
+- `CMAKE_CXX_CPPCHECK`
+- `CMAKE_CXX_CPPLINT`
+- `CMAKE_CXX_CLANG_TIDY`
+- `CMAKE_CXX_INCLUDE_WHAT_YOU_USE`
+--
+
+- `CMAKE_CXX_COMPILER_LAUNCHER`
 
 ---
 
@@ -98,9 +146,95 @@ class: wrapper, center, middle
 
 ---
 
+# Low hanging CMake fruits
+
+- changing your build system
+- building only what's required
+- using only required tooling
+
+---
+
 class: wrapper, center, middle
 
 # Ninja
+
+---
+
+# Ninja
+
+- small build system
+--
+
+- designed to be used with a build system generator
+--
+
+- especially faster for incremental builds
+???
+- thats what developers care about
+--
+
+- used by Chrome, Android, LLVM
+
+---
+
+# Ninja + CMake
+
+Generating - several ways possible:
+
+1. `cmake -G Ninja` (mature since CMake 3.3)
+--
+
+2. `cmake -G 'Ninja Multi-Config'` (CMake 3.17+)
+--
+
+3. `export CMAKE_GENERATOR=Ninja` (CMake 3.15+)
+???
+- sometimes fixing bugs in user CMake code required
+--
+
+Building:
+
+1. `ninja`
+--
+
+2. `cmake --build .`
+
+---
+
+# Building only what's required
+
+Don't:
+
+```bash
+rmdir build; mkdir build; cd build
+cmake -DYADDA=YADDA ..
+make -j # or make -j all
+```
+--
+
+Do:
+
+```bash
+cmake --build . --target my_app
+```
+
+---
+
+class: wrapper, center, middle
+
+# Avoid unnecessary tooling
+
+--
+
+# Include What You Use
+
+- analyzes what you must include and forward declare
+--
+
+- can lead to great build speedups
+--
+
+- but analysis has quite an overhead
 
 ---
 
@@ -143,6 +277,28 @@ In essence: compiler cache
 
 ---
 
+# How much does it help?
+
+A lot!
+
+Personal experience: builds shorter by up to 95%
+
+---
+
+# How much does it help - cont'd
+
+![Benchmark](img/ccache.png)
+
+???
+
+- Preprocessor - first run preprocessor, then hash results
+- Direct - hash source file and include files directly. If miss, goto preprocessor.
+- Depend - like direct, but doesn't goto preproc. on miss. 
+  - depends on compiler's `-MD` or `-MMD`
+  - Great for dist. builds (reduce local overhead)
+
+---
+
 # CCache - supported environment
 
 - works on Linux and macOS, other Unixes, and Windows
@@ -175,6 +331,7 @@ or via build systems
 
 - Windows:
   - just use binaries from GitHub
+  - `scoop install ccache`
 - Others:
   - system package manager - usually not the latest version
   - `brew install ccache`
@@ -192,8 +349,7 @@ ccache <compiler> <compiler_args>
 --
 
 - invoke via symbolic links masquerading the compilers
-???
-masqerading: we'll show that in a sec
+
 --
 
 - integrate with build systems
@@ -218,6 +374,29 @@ When invoked, ccache deduces orig. compiler from $0
 --
 
 2. Put `/usr/local/bin` early in `PATH`
+3. Call your compiler by name, e.g. `g++`
+
+---
+
+# CCache - integrating with CMake
+
+Available since CMake 3.4
+--
+
+```cmake
+-DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+```
+--
+
+```cmake
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+endif()
+```
+
+???
+`RULE_LAUNCH_LINK` - no use, CCache doesn't support linking
 
 ---
 
@@ -242,31 +421,9 @@ In most cases defaults work well.
 Cache size - one thing worth increasing.
 
 Sloppiness:
-- pretty strict by default -> less false hits
+- pretty strict by default -> less false hits, slightly lower performance
 - allows to use ctimes/mtimes instead of file contents
 - needed for modules and precompiled headers
-
----
-
-# CCache - integrating with CMake
-
-Available since CMake 3.4
---
-
-```
--DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-```
---
-
-```
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-endif()
-```
-
-???
-RULE_LAUNCH_LINK - no use, CCache doesn't support linking
 
 ---
 
@@ -293,33 +450,19 @@ umask = 002
 ```
 
 ???
-
 - `base_dir` - allows different users to share cache
-- `hash_dir` - paths in debug symbols
+- `hash_dir`
+  - make the CWD part of the hash
+  - disable to get cache hits when recompiling same sources in different directories
+  - cost: CWD in the debug info might be incorrect
 - `temporary_dir` - faster + helps avoid some bugs
 - To share between OS-es: set `sloppiness` to `system_headers`
 
 ---
 
-# How much does it help?
+# CCache - caveats
 
-A lot!
-
-Personal experience: builds shorter by up to 95%
-
----
-
-# How much does it help - cont'd
-
-![Benchmark](img/ccache.png)
-
-???
-
-- Preprocessor - first run preprocessor, then hash results
-- Direct - hash source file and include files directly. If miss, goto preprocessor.
-- Depend - like direct, but doesn't goto preproc. on miss. 
-  - depends on compiler's `-MD` or `-MMD`
-  - Great for dist. builds (reduce local overhead)
+- unable to cache results from clang-based tools
 
 ---
 
@@ -367,6 +510,18 @@ Automatically sends toolchain to remote
 
 ---
 
+# How much does it help?
+
+![Firefox with IceCC](img/icecc_firefox.png)
+
+???
+- Many cases show at least 20% faster builds
+- More responsive local machine
+
+https://bugzilla.mozilla.org/show_bug.cgi?id=927952
+
+---
+
 exclude: true
 
 # Monitoring - Icemon
@@ -394,6 +549,10 @@ https://github.com/JPEWdev/icecream-sundae
 
 ---
 
+background-image: url(img/icecream.jpg)
+
+---
+
 # Icecream - supported environments
 
 - Linux
@@ -405,21 +564,19 @@ No native Windows :(
 
 ---
 
-background-image: url(img/icecream.jpg)
-
----
-
 # Icecream - installation
 
 - developers recommend using distro's package
   - `sudo apt install icecc`
   - `sudo apt install icecc-scheduler`
   - `sudo apt install icecream-sundae`
+- be sure to run version 1.3.1 or later
 
 ???
 - `icecc` has client and daemon (both required for remote builds)
 - scheduler - on one host only (two possible, automatic fallback)
 - sundae - optional
+
 ---
 
 # Icecream - configuration
@@ -431,15 +588,26 @@ background-image: url(img/icecream.jpg)
 - persistent connections:
   - `--scheduler-host` for daemon
   - `--persistent-client-connection` for scheduler
-???
 
+???
 icecc must be in your path - that's all.
 Network should be fast. Avoid far away nodes.
 Scheduler should have dedicated resources - sensitive to latency.
 
 ---
 
-# Icecream - configuration, cont'd
+# Combining CCache and Icecream
+
+- Your `ccache.conf` file must contain:
+```
+prefix_command=icecc
+```
+???
+Easiest, recommended way.
+
+---
+
+# Icecream without CCache
 
 To ensure Icecream is always used by default, put
 
@@ -451,7 +619,7 @@ early in your `PATH`.
 
 ---
 
-# Icecream - integrating with CMake
+# Icecream without CCache - different approach
 
 ```
 find_program(ICECC_PROGRAM icecc)
@@ -462,27 +630,13 @@ endif()
 
 ---
 
-# Combining CCache and Icecream
+# Icecream - caveats
 
-- Your `ccache.conf` file must contain:
-```
-prefix_command=icecc
-```
---
-
-- CCache should come before IceCC in `PATH`
-
----
-
-# How much does it help?
-
-![Firefox with IceCC](img/icecc_firefox.png)
-
+- bugs in older versions
+- only supports GCC and Clang
+- tricky cross-compilation cases are... tricky
 ???
-- Many cases show at least 20% faster builds
-- More responsive local machine
-
-https://bugzilla.mozilla.org/show_bug.cgi?id=927952
+- not always easy for the tool to recognize native vs cross building
 
 ---
 
@@ -496,6 +650,9 @@ class: wrapper, center, middle
 
 - distributed building for Windows and Linux
 - commercial
+- able to support Intel compilers
+- able to distribute tests
+- uses CCache under the hood
 
 https://www.incredibuild.com/
 
